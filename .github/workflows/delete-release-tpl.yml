@@ -1,0 +1,17 @@
+name: Delete Release Template
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: "The version to delete"
+        required: true
+
+jobs:
+  run:
+    uses: rokucommunity/.github/.github/workflows/delete-release.yml@master
+    with:
+      version: ${{ inputs.version }}
+    secrets: inherit
+

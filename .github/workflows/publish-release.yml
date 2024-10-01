@@ -1,0 +1,44 @@
+name: Publish Release
+run-name: Publish Release
+
+on:
+   workflow_call:
+    inputs:
+        branch:
+            type: string
+            description: "The branch to create the release from"
+            required: true
+        release-type:
+            type: string
+            description: "The type of release. Can be 'npm` or 'vsce'"
+            required: true
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@master
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Checkout .github repo
+        uses: actions/checkout@master
+        with:
+          repository: rokucommunity/.github
+          path: nested-ci
+
+      - name: Setup node
+        uses: actions/setup-node@master
+        with:
+          node-version: "22.9.0"
+
+      - name: CD into nested-ci, run npm ci
+        run: |
+          cd nested-ci
+          npm ci
+    
+      - name: Run publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: npx ts-node nested-ci/src/cli.ts publish-release --branch ${{ inputs.branch }} --releaseType ${{ inputs.release-type }}

@@ -1,0 +1,28 @@
+name: Initialize Release Template
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        description: "The branch to create the release from"
+        default: "master"
+        required: true
+      releaseType:
+        type: choice
+        description: "The type of release: major, minor, or patch"
+        required: true
+        default: "patch"
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  run:
+    uses: rokucommunity/.github/.github/workflows/initialize-release.yml@master
+    with:
+      branch: ${{ inputs.branch }}
+      releaseType: ${{ inputs.releaseType }}
+    secrets: inherit
+

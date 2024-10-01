@@ -1,0 +1,4 @@
+{
+    "name": "Publish Release",
+    "description": "Workflow triggers when release pull request is merged."
+}
