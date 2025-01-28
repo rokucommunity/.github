@@ -10,7 +10,7 @@ let options = yargs
             .option('branch', { type: 'string', description: 'The branch to create the release from' })
             .option('releaseVersion', { type: 'string', description: 'The version number to use for creating the release' })
     }, (argv) => {
-        new ReleaseCreator(argv).run().catch(e => {
+        new ReleaseCreator(argv).stageRelease({ branch: 'test', releaseType: 'major' }).catch(e => {
             console.error(e);
             process.exit(1);
         });
