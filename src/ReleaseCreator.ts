@@ -17,8 +17,9 @@ export class ReleaseCreator {
             releaseVersion: string;
         }
     ) {
-        this.token = process.env.GITHUB_TOKEN || '';
         dotenv.config();
+
+        this.token = process.env.GITHUB_TOKEN || '';
     }
 
     async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
