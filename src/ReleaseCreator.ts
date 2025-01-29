@@ -23,7 +23,10 @@ export class ReleaseCreator {
         dotenv.config();
 
         this.token = process.env.GITHUB_TOKEN || '';
-        this.octokit = new Octokit({ request: { fetch } });
+        this.octokit = new Octokit({
+            auth: this.token,
+            request: { fetch }
+        });
     }
 
     async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
@@ -61,7 +64,6 @@ export class ReleaseCreator {
 
         logger.log(`Create pull request in rokucommunity/${repoName}: release/${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
-            auth: this.token,
             owner: 'rokucommunity',
             repo: repoName,
             title: releaseVersion,
