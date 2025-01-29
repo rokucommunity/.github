@@ -43,13 +43,7 @@ jobs:
           app_id: ${{ secrets.BOT_APP_ID }}
           private_key: ${{ secrets.BOT_PRIVATE_KEY }}
 
-      - name: Set New GitHub Token
-        run: echo "GH_TOKEN=${{ steps.generate-token.outputs.token }}" >> $GITHUB_ENV
-
-      - name: Test 0
-        run: git rev-parse --show-toplevel
-
       - name: Create release
         env:
-           GH_TOKEN: ${{ secrets.TEST }}
+           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: npx ts-node src/cli.ts create-release --releaseType "${{ github.event.inputs.releaseType }}" --branch "${{ github.event.inputs.branch }}"

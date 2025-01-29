@@ -46,7 +46,7 @@ export class ReleaseCreator {
         }
 
         logger.log(`Get the incremented release version`);
-        const releaseVersion = await this.incrementedVersion(options.releaseType as ReleaseType);
+        const releaseVersion = await this.getNewVersion(options.releaseType as ReleaseType);
 
         logger.log(`Get the repository name`);
         // This is neccessary because this code is intended to run in different repositories
@@ -76,6 +76,7 @@ export class ReleaseCreator {
         }
 
         logger.log(`Create commit with version increment`);
+        await this.incrementedVersion(options.releaseType as ReleaseType);
         utils.executeCommand(`git add package.json package-lock.json`);
         utils.executeCommand(`git commit -m 'Increment version to ${releaseVersion}'`);
 
@@ -104,6 +105,14 @@ export class ReleaseCreator {
         });
 
         logger.decreaseIndent();
+    }
+
+    private async getNewVersion(releaseType: ReleaseType) {
+        const packageJson = await fsExtra.readJson(path.join(process.cwd(), 'package.json'));
+        logger.log(`Current version: ${packageJson.version}`);
+
+
+        return semver.inc(packageJson.version, releaseType);
     }
 
     private async incrementedVersion(releaseType: ReleaseType) {
