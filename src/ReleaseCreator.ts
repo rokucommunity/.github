@@ -77,8 +77,9 @@ export class ReleaseCreator {
 
         logger.log(`Create commit with version increment`);
         await this.incrementedVersion(options.releaseType as ReleaseType);
-        utils.executeCommand(`git add package.json package-lock.json`);
-        utils.executeCommand(`git commit -m 'Increment version to ${releaseVersion}'`);
+        utils.executeCommandWithOutput(`git status`);
+        utils.executeCommandWithOutput(`git add package.json package-lock.json`);
+        utils.executeCommandWithOutput(`git commit -m 'Increment version to ${releaseVersion}'`);
 
         logger.log(`Push up the release branch`);
         utils.executeCommand(`git push origin release/${releaseVersion}`);
