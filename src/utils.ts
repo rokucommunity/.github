@@ -30,12 +30,12 @@ export class logger {
 
 export class utils {
     static executeCommand(command: string) {
-        execSync(`${command} > /dev/null 2>&1 `);
+        execSync(`${command} > /dev/null 2>&1 `, { cwd: process.cwd() });
     }
 
     static executeCommandSucceeds(command: string) {
         try {
-            return (execSync(`${command} > /dev/null 2>&1 && echo 1`)?.toString().trim() === '1');
+            return (execSync(`${command} > /dev/null 2>&1 && echo 1`, { cwd: process.cwd() })?.toString().trim() === '1');
         } catch (e) {
             return false;
         }
