@@ -59,7 +59,7 @@ export class ReleaseCreator {
         // This is neccessary because this code is intended to run in different repositories
         const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
 
-        logger.log(`Create pull request: ${releaseVersion} branch release/${releaseVersion} -> ${options.branch}`);
+        logger.log(`Create pull request in rokucommunity/${repoName}: release/${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
             auth: this.token,
             owner: 'rokucommunity',
