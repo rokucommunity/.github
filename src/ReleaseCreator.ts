@@ -1,6 +1,7 @@
 import * as fsExtra from 'fs-extra';
 import * as path from 'path';
 import * as semver from 'semver';
+import * as dotenv from 'dotenv';
 import { option } from 'yargs';
 import { logger, utils } from './utils';
 import { Octokit } from '@octokit/rest';
@@ -17,6 +18,7 @@ export class ReleaseCreator {
         }
     ) {
         this.token = process.env.GH_TOKEN || '';
+        dotenv.config();
     }
 
     async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
