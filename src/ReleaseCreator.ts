@@ -62,6 +62,7 @@ export class ReleaseCreator {
         logger.log(`Create pull request`);
         logger.log(`token = ${this.token}`);
         const createResponse = await this.octokit.rest.pulls.create({
+            auth: this.token,
             owner: 'rokucommunity',
             repo: repoName,
             title: releaseVersion,
