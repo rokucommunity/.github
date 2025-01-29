@@ -2,6 +2,7 @@ import * as fsExtra from 'fs-extra';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as dotenv from 'dotenv';
+import fetch from 'node-fetch';
 import { option } from 'yargs';
 import { logger, utils } from './utils';
 import { Octokit } from '@octokit/rest';
@@ -10,6 +11,8 @@ type ReleaseType = 'major' | 'minor' | 'patch';
 
 export class ReleaseCreator {
     private token: string;
+
+    private octokit: Octokit;
 
     constructor(
         private options: {
@@ -20,6 +23,7 @@ export class ReleaseCreator {
         dotenv.config();
 
         this.token = process.env.GITHUB_TOKEN || '';
+        this.octokit = new Octokit({ request: { fetch } });
     }
 
     async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
@@ -57,7 +61,7 @@ export class ReleaseCreator {
 
         logger.log(`Create pull request`);
         logger.log(`token = ${this.token}`);
-        const createResponse = await new Octokit({ auth: this.token }).rest.pulls.create({
+        const createResponse = await this.octokit.rest.pulls.create({
             owner: 'rokucommunity',
             repo: repoName,
             title: releaseVersion,
