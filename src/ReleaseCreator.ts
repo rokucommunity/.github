@@ -1,6 +1,8 @@
 import * as fsExtra from 'fs-extra';
 import * as path from 'path';
 import * as semver from 'semver';
+import * as dotenv from 'dotenv';
+import fetch from 'node-fetch';
 import { option } from 'yargs';
 import { logger, utils } from './utils';
 import { Octokit } from '@octokit/rest';
@@ -8,7 +10,9 @@ import { Octokit } from '@octokit/rest';
 type ReleaseType = 'major' | 'minor' | 'patch';
 
 export class ReleaseCreator {
-    private logger: logger;
+    private token: string;
+
+    private octokit: Octokit;
 
     constructor(
         private options: {
@@ -16,6 +20,13 @@ export class ReleaseCreator {
             releaseVersion: string;
         }
     ) {
+        dotenv.config();
+
+        this.token = process.env.GITHUB_TOKEN || '';
+        this.octokit = new Octokit({
+            auth: this.token,
+            request: { fetch }
+        });
     }
 
     async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
@@ -51,15 +62,15 @@ export class ReleaseCreator {
         // This is neccessary because this code is intended to run in different repositories
         const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
 
-        logger.log(`Create pull request`);
-        const createResponse = await new Octokit().rest.pulls.create({
+        logger.log(`Create pull request in rokucommunity/${repoName}: release/${releaseVersion} -> ${options.branch}`);
+        const createResponse = await this.octokit.rest.pulls.create({
             owner: 'rokucommunity',
             repo: repoName,
             title: releaseVersion,
             head: `release/${releaseVersion}`,
             body: `Release ${releaseVersion}`,
             base: options.branch,
-            draft: true
+            draft: false
         });
 
         logger.decreaseIndent();
