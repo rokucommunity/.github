@@ -40,4 +40,8 @@ export class utils {
             return false;
         }
     }
+
+    static executeCommandWithOutput(command: string) {
+        return execSync(`${command}`).toString().trim();
+    }
 }
