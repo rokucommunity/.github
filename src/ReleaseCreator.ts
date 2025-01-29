@@ -23,7 +23,7 @@ export class ReleaseCreator {
     ) {
         dotenv.config();
 
-        this.token = process.env.GH_TOKEN || '';
+        this.token = process.env.GITHUB_TOKEN || '';
         this.octokit = new Octokit({
             auth: this.token,
             request: { fetch }
@@ -51,7 +51,7 @@ export class ReleaseCreator {
         // This is neccessary because this code is intended to run in different repositories
         const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
 
-        logger.log(`Get all releases from ${this.ORG}/${repoName}`);
+        logger.log(`Get all releases for ${repoName}`);
         const releases = await this.octokitPageHelper((page: number) => {
             return this.octokit.rest.repos.listReleases({
                 owner: this.ORG,
@@ -78,7 +78,7 @@ export class ReleaseCreator {
         logger.log(`Push up the release branch`);
         utils.executeCommand(`git push origin release/${releaseVersion}`);
 
-        logger.log(`Create pull request in ${this.ORG}/${repoName}: release/${releaseVersion} -> ${options.branch}`);
+        logger.log(`Create pull request in ${repoName}: release/${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
             owner: this.ORG,
             repo: repoName,
