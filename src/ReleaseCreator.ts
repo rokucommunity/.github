@@ -8,7 +8,7 @@ import { Octokit } from '@octokit/rest';
 type ReleaseType = 'major' | 'minor' | 'patch';
 
 export class ReleaseCreator {
-    private logger: logger;
+    private token: string;
 
     constructor(
         private options: {
@@ -16,6 +16,7 @@ export class ReleaseCreator {
             releaseVersion: string;
         }
     ) {
+        this.token = process.env.GH_TOKEN || '';
     }
 
     async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
@@ -52,7 +53,7 @@ export class ReleaseCreator {
         const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
 
         logger.log(`Create pull request`);
-        const createResponse = await new Octokit().rest.pulls.create({
+        const createResponse = await new Octokit({ auth: this.token }).rest.pulls.create({
             owner: 'rokucommunity',
             repo: repoName,
             title: releaseVersion,
