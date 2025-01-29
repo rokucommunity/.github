@@ -11,8 +11,9 @@ type ReleaseType = 'major' | 'minor' | 'patch';
 
 export class ReleaseCreator {
     private token: string;
-
     private octokit: Octokit;
+    private OCTOKIT_PER_PAGE = 100;
+    private ORG = 'rokucommunity';
 
     constructor(
         private options: {
@@ -30,7 +31,7 @@ export class ReleaseCreator {
     }
 
     async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
-        logger.log('Staging release...');
+        logger.log(`Staging release... releaseType: ${options.releaseType}, branch: ${options.branch}`);
         logger.increaseIndent();
 
         logger.log(`Checking for a clean repository`);
@@ -46,6 +47,25 @@ export class ReleaseCreator {
         logger.log(`Get the incremented release version`);
         const releaseVersion = await this.incrementedVersion(options.releaseType as ReleaseType);
 
+        logger.log(`Get the repository name`);
+        // This is neccessary because this code is intended to run in different repositories
+        const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
+
+        logger.log(`Get all releases from ${this.ORG}/${repoName}`);
+        const releases = await this.octokitPageHelper((page: number) => {
+            return this.octokit.rest.repos.listReleases({
+                owner: this.ORG,
+                repo: repoName,
+                per_page: this.OCTOKIT_PER_PAGE,
+                page: page
+            });
+        });
+
+        logger.log(`Check if a GitHub release already exists for ${releaseVersion}`);
+        if (releases.find(r => r.tag_name === releaseVersion)) {
+            throw new Error(`Release ${releaseVersion} already exists`);
+        }
+
         logger.log(`Create new release branch release/${releaseVersion}`);
         if (!utils.executeCommandSucceeds(`git checkout -b release/${releaseVersion}`)) {
             throw new Error(`Cannot create release branch release/${releaseVersion}`);
@@ -58,19 +78,25 @@ export class ReleaseCreator {
         logger.log(`Push up the release branch`);
         utils.executeCommand(`git push origin release/${releaseVersion}`);
 
-        logger.log(`Get the repository name`);
-        // This is neccessary because this code is intended to run in different repositories
-        const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
-
-        logger.log(`Create pull request in rokucommunity/${repoName}: release/${releaseVersion} -> ${options.branch}`);
+        logger.log(`Create pull request in ${this.ORG}/${repoName}: release/${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
-            owner: 'rokucommunity',
+            owner: this.ORG,
             repo: repoName,
             title: releaseVersion,
             head: `release/${releaseVersion}`,
             body: `Release ${releaseVersion}`,
             base: options.branch,
             draft: false
+        });
+
+        logger.log(`Create GitHub release for ${releaseVersion}`);
+        await this.octokit.rest.repos.createRelease({
+            owner: this.ORG,
+            repo: repoName,
+            tag_name: releaseVersion,
+            name: releaseVersion,
+            body: `Release ${releaseVersion}`,
+            draft: true
         });
 
         logger.decreaseIndent();
@@ -86,5 +112,24 @@ export class ReleaseCreator {
         utils.executeCommand(`npm version ${packageJson.version} --no-commit-hooks --no-git-tag-version`);
 
         return packageJson.version;
+    }
+
+    private async octokitPageHelper<T>(api: (page: number) => Promise<{ data: T[] }>, options = {}): Promise<T[]> {
+        let getMorePages = true;
+        let page = 1;
+        let data: T[] = [];
+
+        while (getMorePages) {
+            let releasePage = await api(page);
+            if (!releasePage.data) {
+                break;
+            }
+            if (releasePage.data.length < this.OCTOKIT_PER_PAGE) {
+                getMorePages = false;
+            }
+            data = data.concat(releasePage.data);
+            page++;
+        }
+        return data;
     }
 }
