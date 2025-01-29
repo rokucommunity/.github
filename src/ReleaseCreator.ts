@@ -23,7 +23,7 @@ export class ReleaseCreator {
     ) {
         dotenv.config();
 
-        this.token = process.env.GITHUB_TOKEN || '';
+        this.token = process.env.GH_TOKEN || '';
         this.octokit = new Octokit({
             auth: this.token,
             request: { fetch }
