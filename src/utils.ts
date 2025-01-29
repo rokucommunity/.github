@@ -29,13 +29,21 @@ export class logger {
 }
 
 export class utils {
+    static verbose = true;
+
     static executeCommand(command: string) {
-        execSync(`${command} > /dev/null 2>&1 `, { cwd: process.cwd() });
+        if (!utils.verbose) {
+            command = `${command} > /dev/null 2>&1`;
+        }
+        execSync(command, { cwd: process.cwd() });
     }
 
     static executeCommandSucceeds(command: string) {
+        if (!utils.verbose) {
+            command = `${command} > /dev/null 2>&1`;
+        }
         try {
-            return (execSync(`${command} > /dev/null 2>&1 && echo 1`, { cwd: process.cwd() })?.toString().trim() === '1');
+            return (execSync(`${command} && echo 1`, { cwd: process.cwd() })?.toString().trim() === '1');
         } catch (e) {
             return false;
         }

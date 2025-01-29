@@ -10,7 +10,6 @@ import { Octokit } from '@octokit/rest';
 type ReleaseType = 'major' | 'minor' | 'patch';
 
 export class ReleaseCreator {
-    private token: string;
     private octokit: Octokit;
     private OCTOKIT_PER_PAGE = 100;
     private ORG = 'rokucommunity';
@@ -22,10 +21,12 @@ export class ReleaseCreator {
         }
     ) {
         dotenv.config();
+        utils.verbose = false;
 
-        this.token = process.env.GITHUB_TOKEN || '';
+        logger.log(`Token: ${process.env.GH_TOKEN}`);
+        logger.log(`Token empty check: ${process.env.GH_TOKEN !== ''}`);
         this.octokit = new Octokit({
-            auth: this.token,
+            auth: process.env.GH_TOKEN,
             request: { fetch }
         });
     }
@@ -49,9 +50,12 @@ export class ReleaseCreator {
 
         logger.log(`Get the repository name`);
         // This is neccessary because this code is intended to run in different repositories
-        const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
+        const repoPath = utils.executeCommandWithOutput(`git rev-parse --show-toplevel`).trim();
+        const repoName = require("path").basename(repoPath);
+        logger.log(`Repository URL: ${repoPath}`);
+        logger.log(`Repository name: ${repoName}`);
 
-        logger.log(`Get all releases from ${this.ORG}/${repoName}`);
+        logger.log(`Get all releases for ${repoName}`);
         const releases = await this.octokitPageHelper((page: number) => {
             return this.octokit.rest.repos.listReleases({
                 owner: this.ORG,
@@ -78,7 +82,7 @@ export class ReleaseCreator {
         logger.log(`Push up the release branch`);
         utils.executeCommand(`git push origin release/${releaseVersion}`);
 
-        logger.log(`Create pull request in ${this.ORG}/${repoName}: release/${releaseVersion} -> ${options.branch}`);
+        logger.log(`Create pull request in ${repoName}: release/${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
             owner: this.ORG,
             repo: repoName,

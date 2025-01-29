@@ -1,20 +1,55 @@
 name: Create Release
+
 on:
   workflow_dispatch:
     inputs:
       branch:
+        type: string
         description: "The branch to create the release from"
+        default: "master"
         required: true
-      releaseVersion:
-        description: "The version number for this release"
+      releaseType:
+        type: choice
+        description: "The type of release: major, minor, or patch"
         required: true
+        default: "patch"
+        options:
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: write
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-node@master
+      - name: Checkout code
+        uses: actions/checkout@master
+
+      - name: Setup node
+        uses: actions/setup-node@master
         with:
           node-version: "22.9.0"
-      - run: npm ci
-      - run: npx ts-node src/cli.ts create-release --releaseVersion "${{ github.event.inputs.releaseVersion }}" --branch "${{ github.event.inputs.branch }}"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: get RokuCommunity bot token #so the bot's name shows up on all our actions
+        uses: tibdex/github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.BOT_APP_ID }}
+          private_key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - name: Set New GitHub Token
+        run: echo "GH_TOKEN=${{ steps.generate-token.outputs.token }}" >> $GITHUB_ENV
+
+      - name: Test 0
+        run: git rev-parse --show-toplevel
+
+      - name: Create release
+        env:
+           GH_TOKEN: ${{ secrets.TEST }}
+        run: npx ts-node src/cli.ts create-release --releaseType "${{ github.event.inputs.releaseType }}" --branch "${{ github.event.inputs.branch }}"
