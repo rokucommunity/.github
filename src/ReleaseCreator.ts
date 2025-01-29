@@ -53,6 +53,7 @@ export class ReleaseCreator {
         const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
 
         logger.log(`Create pull request`);
+        logger.log(`token = ${this.token}`);
         const createResponse = await new Octokit({ auth: this.token }).rest.pulls.create({
             owner: 'rokucommunity',
             repo: repoName,
