@@ -59,8 +59,7 @@ export class ReleaseCreator {
         // This is neccessary because this code is intended to run in different repositories
         const repoName = utils.executeCommandWithOutput(`git config --get remote.origin.url | sed -E 's/.*\\/([^/]+)\.git/\\1/'`);
 
-        logger.log(`Create pull request`);
-        logger.log(`token = ${this.token}`);
+        logger.log(`Create pull request: ${releaseVersion} branch release/${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
             auth: this.token,
             owner: 'rokucommunity',
@@ -69,7 +68,7 @@ export class ReleaseCreator {
             head: `release/${releaseVersion}`,
             body: `Release ${releaseVersion}`,
             base: options.branch,
-            draft: true
+            draft: false
         });
 
         logger.decreaseIndent();
