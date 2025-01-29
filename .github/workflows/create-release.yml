@@ -3,11 +3,18 @@ on:
   workflow_dispatch:
     inputs:
       branch:
+        type: string
         description: "The branch to create the release from"
         required: true
-      releaseVersion:
-        description: "The version number for this release"
+      releaseType:
+        type: choice
+        description: "The type of release: major, minor, or patch"
         required: true
+        default: "patch"
+        options:
+          - major
+          - minor
+          - patch
 jobs:
   create-release:
     runs-on: ubuntu-latest
@@ -17,4 +24,4 @@ jobs:
         with:
           node-version: "22.9.0"
       - run: npm ci
-      - run: npx ts-node src/cli.ts create-release --releaseVersion "${{ github.event.inputs.releaseVersion }}" --branch "${{ github.event.inputs.branch }}"
+      - run: npx ts-node src/cli.ts create-release --releaseType "${{ github.event.inputs.releaseType }}" --branch "${{ github.event.inputs.branch }}"
