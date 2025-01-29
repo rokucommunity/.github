@@ -1,4 +1,5 @@
 name: Create Release
+
 on:
   workflow_dispatch:
     inputs:
@@ -16,6 +17,11 @@ on:
           - major
           - minor
           - patch
+
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
