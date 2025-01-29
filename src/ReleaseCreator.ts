@@ -17,7 +17,7 @@ export class ReleaseCreator {
             releaseVersion: string;
         }
     ) {
-        this.token = process.env.GH_TOKEN || '';
+        this.token = process.env.GITHUB_TOKEN || '';
         dotenv.config();
     }
 
