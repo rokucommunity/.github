@@ -5,6 +5,7 @@ on:
       branch:
         type: string
         description: "The branch to create the release from"
+        default: "master"
         required: true
       releaseType:
         type: choice
