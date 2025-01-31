@@ -1,4 +1,4 @@
-name: Create Release
+name: Stage Release
 
 on:
   workflow_dispatch:
@@ -20,7 +20,7 @@ on:
           - patch
 
 jobs:
-  create-release:
+  stage-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

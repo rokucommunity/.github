@@ -1,0 +1,28 @@
+name: Stage Release Dispatcher
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        description: "The branch to create the release from"
+        default: "master"
+        required: true
+      releaseType:
+        type: choice
+        description: "The type of release: major, minor, or patch"
+        required: true
+        default: "patch"
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  call-reusable-workflow:
+    uses: rokucommunity/.github/.github/workflows/stage-release.yml@master
+    with:
+      branch: ${{ github.event.inputs.branch }}
+      releaseType: ${{ github.event.inputs.releaseType }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
