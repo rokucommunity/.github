@@ -1,7 +1,6 @@
 name: Stage Release
 
 on:
-  workflow_dispatch:
   workflow_call:
     inputs:
       branch:
@@ -10,14 +9,9 @@ on:
         default: "master"
         required: true
       releaseType:
-        type: choice
+        type: string
         description: "The type of release: major, minor, or patch"
         required: true
-        default: "patch"
-        options:
-          - major
-          - minor
-          - patch
 
 jobs:
   stage-release:
