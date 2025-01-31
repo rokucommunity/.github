@@ -28,14 +28,11 @@ jobs:
         with:
           node-version: "22.9.0"
 
-      - name: CD into nested-ci
-        run: cd nested-ci
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: CD to original directory
-        run: cd ..
+      - name: CD into nested-ci, run npm ci, then CD back
+        run: |
+          cd nested-ci
+          npm ci
+          cd ..
 
       - name: Setup bot
         run: |
