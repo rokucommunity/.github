@@ -31,6 +31,9 @@ export class logger {
 export class utils {
     static verbose = true;
 
+    static execute(command: string) {
+        execSync(command, { cwd: process.cwd() });
+    }
     static executeCommand(command: string) {
         if (!utils.verbose) {
             command = `${command} > /dev/null 2>&1`;

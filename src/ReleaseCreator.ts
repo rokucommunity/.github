@@ -23,15 +23,13 @@ export class ReleaseCreator {
         dotenv.config();
         utils.verbose = false;
 
-        logger.log(`Token: ${process.env.GH_TOKEN}`);
-        logger.log(`Token empty check: ${process.env.GH_TOKEN !== ''}`);
         this.octokit = new Octokit({
             auth: process.env.GH_TOKEN,
             request: { fetch }
         });
     }
 
-    async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
+    public async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
         logger.log(`Staging release... releaseType: ${options.releaseType}, branch: ${options.branch}`);
         logger.increaseIndent();
 
@@ -43,6 +41,11 @@ export class ReleaseCreator {
         logger.log(`Checkout branch ${options.branch}`);
         if (!utils.executeCommandSucceeds(`git checkout ${options.branch}`)) {
             throw new Error(`Branch ${options.branch} does not exist`);
+        }
+
+        logger.log(`Fetch all branches`);
+        if (!utils.executeCommandSucceeds(`git fetch origin`)) {
+            throw new Error(`Failed to fetch origin`);
         }
 
         logger.log(`Get the incremented release version`);
@@ -84,6 +87,16 @@ export class ReleaseCreator {
         logger.log(`Push up the release branch`);
         utils.executeCommand(`git push origin release/${releaseVersion}`);
 
+        logger.log(`Create GitHub release for ${releaseVersion}`);
+        await this.octokit.rest.repos.createRelease({
+            owner: this.ORG,
+            repo: repoName,
+            tag_name: releaseVersion,
+            name: releaseVersion,
+            body: `Release ${releaseVersion}`,
+            draft: true
+        });
+
         logger.log(`Create pull request in ${repoName}: release/${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
             owner: this.ORG,
@@ -95,16 +108,6 @@ export class ReleaseCreator {
             draft: false
         });
 
-        logger.log(`Create GitHub release for ${releaseVersion}`);
-        await this.octokit.rest.repos.createRelease({
-            owner: this.ORG,
-            repo: repoName,
-            tag_name: releaseVersion,
-            name: releaseVersion,
-            body: `Release ${releaseVersion}`,
-            draft: true
-        });
-
         logger.decreaseIndent();
     }
 
@@ -112,20 +115,15 @@ export class ReleaseCreator {
         const packageJson = await fsExtra.readJson(path.join(process.cwd(), 'package.json'));
         logger.log(`Current version: ${packageJson.version}`);
 
-
         return semver.inc(packageJson.version, releaseType);
     }
 
     private async incrementedVersion(releaseType: ReleaseType) {
-        const packageJson = await fsExtra.readJson(path.join(process.cwd(), 'package.json'));
-        logger.log(`Current version: ${packageJson.version}`);
+        const version = await this.getNewVersion(releaseType);
+        logger.log(`Increment version on package.json to ${version}`);
+        utils.executeCommand(`npm version ${version} --no-commit-hooks --no-git-tag-version`);
 
-
-        packageJson.version = semver.inc(packageJson.version, releaseType);
-        logger.log(`Increment version on package.json to ${packageJson.version}`);
-        utils.executeCommand(`npm version ${packageJson.version} --no-commit-hooks --no-git-tag-version`);
-
-        return packageJson.version;
+        return version;
     }
 
     private async octokitPageHelper<T>(api: (page: number) => Promise<{ data: T[] }>, options = {}): Promise<T[]> {

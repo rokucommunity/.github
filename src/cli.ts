@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import { ReleaseCreator } from './ReleaseCreator';
 
 let options = yargs
-    .command('create-release', 'Create a release PR', (builder) => {
+    .command('stage-release', 'Create a release PR', (builder) => {
         return builder
             .option('branch', { type: 'string', description: 'The branch to create the release from' })
             .option('releaseVersion', { type: 'string', description: 'The version number to use for creating the release' })
