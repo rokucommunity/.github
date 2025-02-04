@@ -1,0 +1,4 @@
+{
+    "name": "RokuCommunity - Publish Release Dispatcher",
+    "description": "Workflow triggers when release pull requests are opend or updated."
+}
