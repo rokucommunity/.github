@@ -1,4 +1,4 @@
 {
-    "name": "RokuCommunity - On Update Build Release",
+    "name": "On Update Build Release",
     "description": "Workflow triggers when release pull requests are opend or updated."
 }

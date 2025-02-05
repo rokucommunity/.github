@@ -11,6 +11,7 @@ This repository holds reusable and template workflows for the new release system
   - [Step 2: Build](#step-2-build)
   - [Step 3: Publish](#step-3-publish)
 - [Repository Setup](#repository-setup)
+  - [Setting Up Template Workflows in a Repository](#setting-up-template-workflows-in-a-repository)
 - [Command Line](#command-line)
 
 ---
@@ -80,6 +81,11 @@ Each workflow step has an associated **template** to set up workflow triggers an
 To integrate this release workflow system into a new repository, follow these steps:
 
 1. **Add Workflow Templates**: Each repository must include the workflow templates: `on-dispatch-stage-release`, `on-update-build-release`, `on-merge-publish-release` from this repository.
+
+  - [Setting Up Template Workflows in a Repository](#setting-up-template-workflows-in-a-repository)
+
+     [_Example repository workflow setup_](https://github.com/rokucommunity/release-testing/tree/master/.github/workflows)
+
 2. **Ensure Required NPM Scripts Exist**:
    - `lint`: Runs linting checks. (_Optional_)
    - `test`: Runs unit and integration tests. (_Optional_)
@@ -98,7 +104,28 @@ To integrate this release workflow system into a new repository, follow these st
    - The post-build step will look for release artifacts in this directory to upload to the GitHub release.
 
 ---
+### Setting Up Template Workflows in a Repository  
 
+To integrate the release workflow system into a repository, follow these steps to add the required workflow templates from the **RokuCommunity** organization:  
+
+### Step 1: Add Workflow Templates  
+1. Navigate to your repository on GitHub.  
+2. Click on the **Actions** tab.  
+3. Click **New workflow** or go directly to `.github/workflows`.  
+4. Under **"Choose a workflow"**, find the **By RokuCommunity** templates:  
+   - **On Dispatch Stage Release**  
+   - **On Update Build Release**  
+   - **On Merge Publish Release**  
+5. Click on each template and select **"Configure"**.  
+
+### Step 2: Commit the Workflow Files  
+1. Click **Commit changes...**.  
+2. Ensure the commit is made to the default branch (master)
+5. Click **Commit changes**
+
+Once these workflows are set up, your repository will automatically follow the structured release process!
+
+---
 ## Command Line
 
 How would the command line work in each repository? The repos won't have the Reusable CI scripts.

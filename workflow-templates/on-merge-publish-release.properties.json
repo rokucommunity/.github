@@ -1,4 +1,4 @@
 {
-    "name": "RokuCommunity - On Merge Publish Release",
+    "name": "On Merge Publish Release",
     "description": "Workflow triggers when release pull requests are opend or updated."
 }
