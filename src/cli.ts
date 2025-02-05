@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import { ReleaseCreator } from './ReleaseCreator';
 
 let options = yargs
-    .command('stage-release', 'Create a release PR', (builder) => {
+    .command('stage-release', 'Create a release PR, draft GitHub release', (builder) => {
         return builder
             .option('branch', { type: 'string', description: 'The branch to create the release from' })
             .option('releaseVersion', { type: 'string', description: 'The version number to use for creating the release' })
@@ -15,11 +15,20 @@ let options = yargs
             process.exit(1);
         });
     })
-    .command('upload-release', 'Upload a release to the Roku store', (builder) => {
+    .command('upload-release', 'Upload release artifacts to GitHub release', (builder) => {
         return builder
-            .option('branch', { type: 'string', description: 'The branch to create the release from' })
+            .option('branch', { type: 'string', description: 'The branch the release is based on' })
     }, (argv) => {
         new ReleaseCreator().uploadRelease(argv).catch(e => {
+            console.error(e);
+            process.exit(1);
+        });
+    })
+    .command('publish-release', 'Publish GitHub release, push artifacts for public use', (builder) => {
+        return builder
+            .option('branch', { type: 'string', description: 'The branch the release is based on' })
+    }, (argv) => {
+        new ReleaseCreator().publishRelease(argv).catch(e => {
             console.error(e);
             process.exit(1);
         });
