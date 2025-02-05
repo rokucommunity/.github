@@ -48,7 +48,7 @@ Each workflow step has an associated **template** to set up workflow triggers an
 - **Required Parameters**:
   - `branch` (target branch for the release)
   - `release_type` (e.g., major, minor, patch)
-- [Stage Release Template](#) *(Placeholder for link)*
+- [Stage Release Template](https://github.com/rokucommunity/.github/blob/master/workflow-templates/on-dispatch-stage-release.yml)
 
 ### Step 2: Build
 
@@ -62,7 +62,7 @@ Each workflow step has an associated **template** to set up workflow triggers an
     3. Build the release artifacts.
   - **Post-Build**:
     4. Upload artifacts to the draft GitHub release.
-- [Build Template](#) *(Placeholder for link)*
+- [Build Release Template](https://github.com/rokucommunity/.github/blob/master/workflow-templates/on-update-build-release.yml)
 
 ### Step 3: Publish
 
@@ -71,7 +71,7 @@ Each workflow step has an associated **template** to set up workflow triggers an
 - **Actions**:
   1. Mark the GitHub release as non-draft.
   2. Publish the release to users (e.g., npm, VS Code Marketplace).
-- [Publish Template](#) *(Placeholder for link)*
+- [Publish Release Template](https://github.com/rokucommunity/.github/blob/master/workflow-templates/on-merge-publish-release.yml)
 
 ---
 
