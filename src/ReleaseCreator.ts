@@ -138,7 +138,7 @@ export class ReleaseCreator {
         logger.decreaseIndent();
 
         logger.log(`Get artifacts from the build`)
-        const artifacts = fastGlob.sync(`out/${releaseVersion}*`, { absolute: false })
+        const artifacts = fastGlob.sync(`out/*`, { absolute: false })
 
         logger.log(`Uploading artifacts`);
         logger.increaseIndent();
