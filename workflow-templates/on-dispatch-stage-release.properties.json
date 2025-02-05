@@ -1,4 +1,4 @@
 {
     "name": "On Dispatch Stage Release",
-    "description": "Workflow to dispatch and reuse the stage-release workflow."
+    "description": "Dispatch workflow that kicks of a release. The branch and release type are specified in the dispatch payload."
 }

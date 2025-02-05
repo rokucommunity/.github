@@ -1,4 +1,4 @@
 {
     "name": "On Merge Publish Release",
-    "description": "Workflow triggers when release pull requests are opend or updated."
+    "description": "Workflow triggers when release pull requests closed and merged."
 }
