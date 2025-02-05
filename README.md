@@ -79,7 +79,7 @@ Each workflow step has an associated **template** to set up workflow triggers an
 
 To integrate this release workflow system into a new repository, follow these steps:
 
-1. **Add Workflow Templates**: Each repository must include the relevant workflow templates from this repository.
+1. **Add Workflow Templates**: Each repository must include the workflow templates: `on-dispatch-stage-release`, `on-update-build-release`, `on-merge-publish-release` from this repository.
 2. **Ensure Required NPM Scripts Exist**:
    - `lint`: Runs linting checks. (_Optional_)
    - `test`: Runs unit and integration tests. (_Optional_)
@@ -94,4 +94,3 @@ To integrate this release workflow system into a new repository, follow these st
 
 How would the command line work in each repository? The repos won't have the Reusable CI scripts.
 
-Repositories should be set up with the required npm scripts (`lint`, `test`, and `build`) to ensure compatibility with the release workflow system.
