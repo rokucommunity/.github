@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout caller repo
         uses: actions/checkout@master
+        with:
+          ref: ${{ github.event.inputs.branch }}
 
       - name: Checkout .github repo
         uses: actions/checkout@master
