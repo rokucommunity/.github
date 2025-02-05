@@ -12,6 +12,7 @@ This repository holds reusable and template workflows for the new release system
   - [Step 3: Publish](#step-3-publish)
 - [Repository Setup](#repository-setup)
   - [Setting Up Template Workflows in a Repository](#setting-up-template-workflows-in-a-repository)
+- [Recovering from a Failed Release CI](#recovering-from-a-failed-release-ci)
 - [Command Line](#command-line)
 
 ---
@@ -124,6 +125,26 @@ To integrate the release workflow system into a repository, follow these steps t
 5. Click **Commit changes**
 
 Once these workflows are set up, your repository will automatically follow the structured release process!
+
+---
+## Recovering from a Failed Release CI
+
+If the release CI fails and does not recover automatically, follow these steps to reset the release process:
+
+1. **Delete the GitHub Release**
+   - Go to the **Releases** section of your repository.
+   - Find the failed release.
+   - Click **Delete release**.
+
+2. **Delete the Pull Request for the Release**
+   - Navigate to the **Pull Requests** tab.
+   - Locate the pull request associated with the release.
+   - Close and delete the pull request.
+
+3. **Delete the Release Branch**
+   - Go to the **Branches** section of your repository.
+   - Find the branch created for the release (e.g., `release/version`).
+   - Delete the branch.
 
 ---
 ## Command Line
