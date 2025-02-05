@@ -16,7 +16,6 @@ jobs:
       uses: rokucommunity/.github/.github/workflows/pre-build-release.yml@master
       with:
         branch: ${{ github.event.inputs.branch }}
-        releaseType: ${{ github.event.inputs.releaseType }}
       secrets: inherit
 
   call-build-release:
