@@ -10,7 +10,16 @@ let options = yargs
             .option('branch', { type: 'string', description: 'The branch to create the release from' })
             .option('releaseVersion', { type: 'string', description: 'The version number to use for creating the release' })
     }, (argv) => {
-        new ReleaseCreator(argv).stageRelease(argv).catch(e => {
+        new ReleaseCreator().stageRelease(argv).catch(e => {
+            console.error(e);
+            process.exit(1);
+        });
+    })
+    .command('upload-release', 'Upload a release to the Roku store', (builder) => {
+        return builder
+            .option('branch', { type: 'string', description: 'The branch to create the release from' })
+    }, (argv) => {
+        new ReleaseCreator().uploadRelease(argv).catch(e => {
             console.error(e);
             process.exit(1);
         });

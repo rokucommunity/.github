@@ -32,4 +32,4 @@ jobs:
           npm ci
     
       - name: Run upload
-        run: ts-node src/cli.ts upload --branch "master"
+        run: npx ts-node src/cli.ts uploadRelease --branch ${{ github.event.inputs.branch }}
