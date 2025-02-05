@@ -12,7 +12,6 @@ on:
 
 jobs:
   call-pre-build-release:
-    - name: Call Pre Build Release
       if: startsWith( github.head_ref, 'release/') 
       uses: rokucommunity/.github/.github/workflows/pre-build-release.yml@master
       with:
@@ -21,7 +20,6 @@ jobs:
       secrets: inherit
 
   call-build-release:
-    - name: Call Build Release
       needs: [call-pre-build-release]
       uses: rokucommunity/.github/.github/workflows/build-release.yml@master
       with:
@@ -29,7 +27,6 @@ jobs:
       secrets: inherit
 
   call-post-build-release:
-    - name: Call Post Build Release
       needs: [call-build-release]
       uses: rokucommunity/.github/.github/workflows/post-build-release.yml@master
       with:
