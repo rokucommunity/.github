@@ -84,6 +84,15 @@ To integrate this release workflow system into a new repository, follow these st
    - `lint`: Runs linting checks. (_Optional_)
    - `test`: Runs unit and integration tests. (_Optional_)
    - `build`: Compiles the application and outputs artifacts to `out/`.
+
+   _Example for adding to `package.json`_
+   ```json
+    "scripts": {
+      "lint": "echo \"Place holder for lint command\"",
+      "test": "echo \"Place holder for test command\"",
+      "build": "echo \"Place holder for build command\" && mkdir out && echo \"Hello World!\" > out/hello.txt"
+    },
+   ```
 3. **Build Artifacts Location**:
    - The `build` script should place all compiled artifacts in the `out/` directory.
    - The post-build step will look for release artifacts in this directory to upload to the GitHub release.
