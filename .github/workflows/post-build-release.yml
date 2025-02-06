@@ -32,7 +32,12 @@ jobs:
         run: |
           cd nested-ci
           npm ci
-    
+  
+      - name: List files
+        run: |
+          ls -la;
+          ls -la out;
+
       - name: Run upload
         env:
           GH_TOKEN: ${{ github.token }}

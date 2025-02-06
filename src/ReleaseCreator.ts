@@ -196,7 +196,7 @@ export class ReleaseCreator {
 
     private async listGitHubReleases(repoName: string) {
         logger.log(`Get all releases for ${repoName}`);
-        const releases = await this.octokitPageHelper((page: number) => {
+        const releases = await this.octokitPageHelper((options: any, page: number) => {
             return this.octokit.rest.repos.listReleases({
                 owner: this.ORG,
                 repo: repoName,
@@ -215,13 +215,13 @@ export class ReleaseCreator {
         return repoName;
     }
 
-    private async octokitPageHelper<T>(api: (page: number) => Promise<{ data: T[] }>, options = {}): Promise<T[]> {
+    private async octokitPageHelper<T>(api: (options: any, page: number) => Promise<{ data: T[] }>, options = {}): Promise<T[]> {
         let getMorePages = true;
         let page = 1;
         let data: T[] = [];
 
         while (getMorePages) {
-            let releasePage = await api(page);
+            let releasePage = await api(options, page);
             if (!releasePage.data) {
                 break;
             }
