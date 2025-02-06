@@ -19,7 +19,7 @@ on:
           - patch
 
 jobs:
-  call-stage-release:
+  call:
     uses: rokucommunity/.github/.github/workflows/stage-release.yml@master
     with:
       branch: ${{ github.event.inputs.branch }}

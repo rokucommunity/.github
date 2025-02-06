@@ -35,6 +35,12 @@ jobs:
         with:
           node-version: "22.9.0"
 
+      - name: Download the artifacts gernerated from build
+        uses: actions/download-artifact@v4
+        with:
+          name: buildArtifacts
+          path: out/
+
       - name: CD into nested-ci, run npm ci
         run: |
           cd nested-ci
