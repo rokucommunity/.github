@@ -212,7 +212,7 @@ export class ReleaseCreator {
             logger.log(`Delete branch release/${options.releaseVersion}`);
             utils.executeCommand(`git checkout master`);
             utils.executeCommand(`git push --delete origin release/${options.releaseVersion}`);
-        } catch {
+        } catch (error) {
             logger.log(`Failed to delete branch release/${options.releaseVersion}`);
         }
         logger.decreaseIndent();
