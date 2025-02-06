@@ -193,20 +193,30 @@ export class ReleaseCreator {
             } catch (error) {
                 logger.log(`Failed to delete release ${options.releaseVersion}`);
             }
-
-            try {
-                logger.log(`Close pull request for release ${options.releaseVersion}`);
-                await this.octokit.rest.pulls.update({
-                    owner: this.ORG,
-                    repo: repoName,
-                    pull_number: draftRelease.id,
-                    state: 'closed'
-                });
-            } catch (error) {
-                logger.log(`Failed to close pull request for release ${options.releaseVersion}`);
-            }
         }
 
+        logger.log(`Close pull request for release ${options.releaseVersion}`);
+        const pullRequest = await this.octokit.rest.pulls.list({
+            owner: this.ORG,
+            repo: repoName,
+            state: 'open',
+            head: `release/${options.releaseVersion}`
+        });
+        if (pullRequest.data.length > 0) {
+            for (const pr of pullRequest.data) {
+                try {
+                    await this.octokit.rest.pulls.update({
+                        owner: this.ORG,
+                        repo: repoName,
+                        pull_number: pr.number,
+                        state: 'closed'
+                    });
+                    logger.log(`Closed pull request ${pr.number}`);
+                } catch (error) {
+                    logger.log(`Failed to close pull request ${pr.number}`);
+                }
+            }
+        }
 
         try {
             logger.log(`Delete branch release/${options.releaseVersion}`);
