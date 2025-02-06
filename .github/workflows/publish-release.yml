@@ -33,4 +33,6 @@ jobs:
           npm ci
     
       - name: Run publish
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: npx ts-node nested-ci/src/cli.ts publish-release --branch ${{ github.event.inputs.branch }}

@@ -34,4 +34,6 @@ jobs:
           npm ci
     
       - name: Run upload
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: npx ts-node nested-ci/src/cli.ts upload-release --branch ${{ github.event.inputs.branch }}
