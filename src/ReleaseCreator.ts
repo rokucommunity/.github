@@ -172,6 +172,52 @@ export class ReleaseCreator {
         //release artifcats to the approriate store / manager (npm, vscode)
     }
 
+    public async deleteRelease(options: { version: string }) {
+        logger.log(`Delete release... version: ${options.version}`);
+        logger.increaseIndent();
+
+        logger.log(`Get the repository name`);
+        let repoName = this.getRepositoryName();
+
+        logger.log(`Find the existing release ${options.version}`);
+        const releases = await this.listGitHubReleases(repoName);
+        let draftRelease = releases.find(r => r.tag_name === options.version);
+        if (draftRelease) {
+            try {
+                logger.log(`Deleting release ${options.version}`);
+                this.octokit.rest.repos.deleteRelease({
+                    owner: this.ORG,
+                    repo: repoName,
+                    release_id: draftRelease.id
+                });
+            } catch (error) {
+                logger.log(`Failed to delete release ${options.version}`);
+            }
+
+            try {
+                logger.log(`Close pull request for release ${options.version}`);
+                this.octokit.rest.pulls.update({
+                    owner: this.ORG,
+                    repo: repoName,
+                    pull_number: draftRelease.id,
+                    state: 'closed'
+                });
+            } catch (error) {
+                logger.log(`Failed to close pull request for release ${options.version}`);
+            }
+        }
+
+
+        try {
+            logger.log(`Delete branch release/${options.version}`);
+            utils.executeCommand(`git checkout master`);
+            utils.executeCommand(`git push --delete origin release/${options.version}`);
+        } catch {
+            logger.log(`Failed to delete branch release/${options.version}`);
+        }
+
+    }
+
     private async getVersion() {
         const packageJson = await fsExtra.readJson(path.join(process.cwd(), 'package.json'));
         logger.log(`Current version: ${packageJson.version}`);

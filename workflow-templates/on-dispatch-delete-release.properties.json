@@ -1,0 +1,4 @@
+{
+    "name": "On Dispatch Delete Release",
+    "description": "Dispatch workflow that deletes a release; by closing the PR, deleting the branch, and deleting the GitHub release."
+}

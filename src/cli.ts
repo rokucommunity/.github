@@ -33,4 +33,13 @@ let options = yargs
             process.exit(1);
         });
     })
+    .command('delete-release', 'Delete GitHub release, close pull request, and delete branch', (builder) => {
+        return builder
+            .option('version', { type: 'string', description: 'The version the release is based on' })
+    }, (argv) => {
+        new ReleaseCreator().publishRelease(argv).catch(e => {
+            console.error(e);
+            process.exit(1);
+        });
+    })
     .argv;
