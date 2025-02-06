@@ -172,30 +172,30 @@ export class ReleaseCreator {
         //release artifcats to the approriate store / manager (npm, vscode)
     }
 
-    public async deleteRelease(options: { version: string }) {
-        logger.log(`Delete release... version: ${options.version}`);
+    public async deleteRelease(options: { releaseVersion: string }) {
+        logger.log(`Delete release... version: ${options.releaseVersion}`);
         logger.increaseIndent();
 
         logger.log(`Get the repository name`);
         let repoName = this.getRepositoryName();
 
-        logger.log(`Find the existing release ${options.version}`);
+        logger.log(`Find the existing release ${options.releaseVersion}`);
         const releases = await this.listGitHubReleases(repoName);
-        let draftRelease = releases.find(r => r.tag_name === options.version);
+        let draftRelease = releases.find(r => r.tag_name === options.releaseVersion);
         if (draftRelease) {
             try {
-                logger.log(`Deleting release ${options.version}`);
+                logger.log(`Deleting release ${options.releaseVersion}`);
                 this.octokit.rest.repos.deleteRelease({
                     owner: this.ORG,
                     repo: repoName,
                     release_id: draftRelease.id
                 });
             } catch (error) {
-                logger.log(`Failed to delete release ${options.version}`);
+                logger.log(`Failed to delete release ${options.releaseVersion}`);
             }
 
             try {
-                logger.log(`Close pull request for release ${options.version}`);
+                logger.log(`Close pull request for release ${options.releaseVersion}`);
                 this.octokit.rest.pulls.update({
                     owner: this.ORG,
                     repo: repoName,
@@ -203,17 +203,17 @@ export class ReleaseCreator {
                     state: 'closed'
                 });
             } catch (error) {
-                logger.log(`Failed to close pull request for release ${options.version}`);
+                logger.log(`Failed to close pull request for release ${options.releaseVersion}`);
             }
         }
 
 
         try {
-            logger.log(`Delete branch release/${options.version}`);
+            logger.log(`Delete branch release/${options.releaseVersion}`);
             utils.executeCommand(`git checkout master`);
-            utils.executeCommand(`git push --delete origin release/${options.version}`);
+            utils.executeCommand(`git push --delete origin release/${options.releaseVersion}`);
         } catch {
-            logger.log(`Failed to delete branch release/${options.version}`);
+            logger.log(`Failed to delete branch release/${options.releaseVersion}`);
         }
         logger.decreaseIndent();
     }
