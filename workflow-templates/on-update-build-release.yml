@@ -11,22 +11,22 @@ on:
         - 'package-lock.json'
 
 jobs:
-  call:
+  call-1:
       if: startsWith( github.head_ref, 'release/') 
       uses: rokucommunity/.github/.github/workflows/pre-build-release.yml@master
       with:
         branch: ${{ github.event.inputs.branch }}
       secrets: inherit
 
-  call:
-      needs: [call-pre-build-release]
+  call-2:
+      needs: [call-1]
       uses: rokucommunity/.github/.github/workflows/build-release.yml@master
       with:
         branch: ${{ github.event.pull_request.head.ref }}
       secrets: inherit
 
-  call:
-      needs: [call-build-release]
+  call-3:
+      needs: [call-2]
       uses: rokucommunity/.github/.github/workflows/post-build-release.yml@master
       with:
         branch: ${{ github.event.pull_request.head.ref }}
