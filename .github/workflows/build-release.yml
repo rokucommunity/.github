@@ -34,4 +34,6 @@ jobs:
           npm ci
 
       - name: Run build
-        run: npm run build
+        run: |
+          npm run build;
+          ls -la;
