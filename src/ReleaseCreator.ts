@@ -210,8 +210,11 @@ export class ReleaseCreator {
 
         try {
             logger.log(`Delete branch release/${options.releaseVersion}`);
-            utils.executeCommand(`git checkout master`);
-            utils.executeCommand(`git push --delete origin release/${options.releaseVersion}`);
+            this.octokit.rest.git.deleteRef({
+                owner: this.ORG,
+                repo: repoName,
+                ref: `heads/release/${options.releaseVersion}`
+            });
         } catch (error) {
             logger.log(`Failed to delete branch release/${options.releaseVersion}`);
         }

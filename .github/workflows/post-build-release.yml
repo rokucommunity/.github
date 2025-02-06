@@ -12,6 +12,13 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: buildArtifacts
+          pattern: buildArtifacts-*
+          delete-merged: true
+
       - name: Checkout caller repo
         uses: actions/checkout@master
         with:
