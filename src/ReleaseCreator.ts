@@ -185,7 +185,7 @@ export class ReleaseCreator {
         if (draftRelease) {
             try {
                 logger.log(`Deleting release ${options.releaseVersion}`);
-                this.octokit.rest.repos.deleteRelease({
+                await this.octokit.rest.repos.deleteRelease({
                     owner: this.ORG,
                     repo: repoName,
                     release_id: draftRelease.id
@@ -196,7 +196,7 @@ export class ReleaseCreator {
 
             try {
                 logger.log(`Close pull request for release ${options.releaseVersion}`);
-                this.octokit.rest.pulls.update({
+                await this.octokit.rest.pulls.update({
                     owner: this.ORG,
                     repo: repoName,
                     pull_number: draftRelease.id,
@@ -210,7 +210,7 @@ export class ReleaseCreator {
 
         try {
             logger.log(`Delete branch release/${options.releaseVersion}`);
-            this.octokit.rest.git.deleteRef({
+            await this.octokit.rest.git.deleteRef({
                 owner: this.ORG,
                 repo: repoName,
                 ref: `heads/release/${options.releaseVersion}`
