@@ -37,7 +37,7 @@ let options = yargs
         return builder
             .option('version', { type: 'string', description: 'The version the release is based on' })
     }, (argv) => {
-        new ReleaseCreator().publishRelease(argv).catch(e => {
+        new ReleaseCreator().deleteRelease(argv).catch(e => {
             console.error(e);
             process.exit(1);
         });

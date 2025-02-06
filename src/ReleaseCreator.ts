@@ -215,7 +215,7 @@ export class ReleaseCreator {
         } catch {
             logger.log(`Failed to delete branch release/${options.version}`);
         }
-
+        logger.decreaseIndent();
     }
 
     private async getVersion() {
