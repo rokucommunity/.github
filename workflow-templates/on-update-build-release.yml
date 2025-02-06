@@ -15,7 +15,7 @@ jobs:
       if: startsWith( github.head_ref, 'release/') 
       uses: rokucommunity/.github/.github/workflows/pre-build-release.yml@master
       with:
-        branch: ${{ github.event.inputs.branch }}
+        branch: ${{ github.event.pull_request.head.ref }}
       secrets: inherit
 
   call-2:
