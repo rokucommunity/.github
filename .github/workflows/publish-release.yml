@@ -8,6 +8,10 @@ on:
             type: string
             description: "The branch to create the release from"
             required: true
+        publish-store:
+            type: string
+            description: "The store to publish the release to"
+            required: true
 
 jobs:
   publish-release:
@@ -37,4 +41,4 @@ jobs:
       - name: Run publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: npx ts-node nested-ci/src/cli.ts publish-release --branch ${{ github.event.inputs.branch }}
+        run: npx ts-node nested-ci/src/cli.ts publish-release --branch ${{ github.event.inputs.branch }} --publishStore ${{ github.event.inputs.publish-store }}

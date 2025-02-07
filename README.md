@@ -60,9 +60,13 @@ Each workflow step has an associated **template** to set up workflow triggers an
 - **Actions**:
     1. Build the release artifacts.
     2. Upload artifacts to the draft GitHub release.
+- **Required Parameters** _(these are hardcoded in the template)_:
+  - `branch` (The head ref for the release PR)
+  - `node-version` (The node version used to build the artifacts)
+  - `asset-paths` (The glob path used to get all the release artifacts)
 - [Create Release Artifacts Release Template](https://github.com/rokucommunity/.github/blob/master/workflow-templates/create-release-artifacts.yml)
-
 ### Step 3: Publish Release
+
 
 - **Purpose**: Finalizes the release by marking it as non-draft and publishing the code.
 - **Triggers**: Merging of a `release/*` branch.
@@ -70,6 +74,9 @@ Each workflow step has an associated **template** to set up workflow triggers an
   1. Mark the GitHub release as non-draft.
   2. Publish the release to users (e.g., npm, VS Code Marketplace).
 - [Publish Release Template](https://github.com/rokucommunity/.github/blob/master/workflow-templates/publish-release.yml)
+- **Required Parameters** _(these are hardcoded in the template)_:
+  - `branch` (The head ref for the release PR)
+  - `release-store` (The head ref for the release PR)
 
 ---
 
@@ -81,17 +88,17 @@ To integrate this release workflow system into a new repository, follow these st
 
      [_Example repository workflow setup_](https://github.com/rokucommunity/release-testing/tree/master/.github/workflows)
 
-2. **Ensure Required NPM Scripts Exist**:
-   - `build`: Compiles the application and outputs artifacts to `out/`.
+2. **Ensure Required NPM Script Exist**:
+   - `package`: Compiles the application.
 
-   _Example for adding to `package.json`_
+   _Example `package.json`_
    ```json
     "scripts": {
-      "build": "echo \"Place holder for build command\" && mkdir out && echo \"Hello World!\" > out/hello.txt"
+      "package": "echo \"Place holder for build command\" && mkdir out && echo \"Hello World!\" > hello.txt"
     },
    ```
-3. **Build Artifacts Location**:
-   - The `build` script should place all compiled artifacts in the `out/` directory.
+3. **Build Artifacts Paths**:
+   - The `package` script name and place all artifacts in a way that the `asset_paths` set in [Create Release Artifacts Release Template](https://github.com/rokucommunity/.github/blob/master/workflow-templates/create-release-artifacts.yml) is selectable.
    - The post-build step will look for release artifacts in this directory to upload to the GitHub release.
 
 ---
@@ -109,7 +116,12 @@ To integrate the release workflow system into a repository, follow these steps t
    - **Publish Release**  
 5. Click on each template and select **"Configure"**.  
 
-### Step 2: Commit the Workflow Files  
+### Step 2: Check needed edits
+1. Edit `asset_paths` if needed
+2. Edit `node-version` if needed
+2. Edit `publish-store` if needed
+
+### Step 3: Commit the Workflow Files
 1. Click **Commit changes...**.  
 2. Ensure the commit is made to the default branch (master)
 5. Click **Commit changes**
@@ -135,6 +147,8 @@ If the release CI fails and does not recover automatically, follow these steps t
    - Go to the **Branches** section of your repository.
    - Find the branch created for the release (e.g., `release/version`).
    - Delete the branch.
+
+_Note there is a [workflow template: Delete Release](https://github.com/rokucommunity/.github/blob/master/workflow-templates/delete-release.yml) that does all three steps_
 
 ---
 ## Command Line

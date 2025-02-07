@@ -9,7 +9,7 @@ on:
         required: true
 
 jobs:
-  use-reusable-workflow:
+  run:
     uses: rokucommunity/.github/.github/workflows/delete-release.yml@master
     with:
       version: ${{ github.event.inputs.version }}

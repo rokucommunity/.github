@@ -8,6 +8,14 @@ on:
             type: string
             description: "The branch to create the release from"
             required: true
+        node-version:
+            type: string
+            description: "The node version to use"
+            required: true
+        asset-paths:
+            type: string
+            description: "The glob patters to find the release artifacts"
+            required: true
 
 jobs:
   create-release-artifacts:
@@ -27,21 +35,15 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@master
         with:
-          node-version: "22.9.0"
+          node-version: ${{ github.event.inputs.node-version }}
 
       - name: CD into nested-ci, run npm ci
         run: |
           cd nested-ci
           npm ci
 
-      - name: Run build
-        run: npm run build;
-      
-      - name: Upload artifacts to Job
-        uses: actions/upload-artifact@v4
-        with:
-          name: buildArtifacts-${{ github.event.inputs.branch }}
-          path: out/*
+      - name: Run package
+        run: npm run package;
 
       - name: Run upload
         env:

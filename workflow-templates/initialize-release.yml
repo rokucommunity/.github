@@ -19,7 +19,7 @@ on:
           - patch
 
 jobs:
-  use-reusable-workflow:
+  run:
     uses: rokucommunity/.github/.github/workflows/initialize-release.yml@master
     with:
       branch: ${{ github.event.inputs.branch }}
