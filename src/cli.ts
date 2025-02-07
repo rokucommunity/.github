@@ -8,13 +8,13 @@ let options = yargs
     .command('initialize-release', 'Initialize a release PR, draft GitHub release', (builder) => {
         return builder
             .option('branch', { type: 'string', description: 'The branch to create the release from' })
-            .option('releaseVersion', { type: 'string', description: 'The version number to use for creating the release' })
+            .option('releaseType', { type: 'string', description: 'The version number to use for creating the release' })
     }, (argv) => {
-        if (!['major', 'minor', 'patch'].includes(argv.releaseVersion)) {
+        if (!['major', 'minor', 'patch'].includes(argv.releaseType)) {
             console.error(`Invalid release version. Must be one of 'major', 'minor', or 'patch'`);
             process.exit(1);
         }
-        new ReleaseCreator().initializeRelease({ branch: argv.branch, releaseType: argv.releaseVersion }).catch(e => {
+        new ReleaseCreator().initializeRelease({ branch: argv.branch, releaseType: argv.releaseType }).catch(e => {
             console.error(e);
             process.exit(1);
         });

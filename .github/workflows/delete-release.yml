@@ -10,7 +10,7 @@ on:
         required: true
 
 jobs:
-  stage-release:
+  delete-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout caller repo

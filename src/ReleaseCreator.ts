@@ -181,7 +181,7 @@ export class ReleaseCreator {
 
         logger.log(`Find the existing release ${options.releaseVersion}`);
         const releases = await this.listGitHubReleases(repoName);
-        let draftRelease = releases.find(r => r.tag_name === options.releaseVersion);
+        let draftRelease = releases.find(r => r.tag_name === options.releaseVersion && r.draft);
         if (draftRelease) {
             try {
                 logger.log(`Deleting release ${options.releaseVersion}`);
