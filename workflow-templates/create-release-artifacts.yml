@@ -13,7 +13,6 @@ on:
 jobs:
   use-reusable-workflow:
       uses: rokucommunity/.github/.github/workflows/create-release-artifact.yml@master
-      run-name: Create Release Artifacts
       with:
         branch: ${{ github.event.pull_request.head.ref }}
       secrets: inherit

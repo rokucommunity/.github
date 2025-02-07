@@ -1,4 +1,5 @@
 name: Initialize Release
+run-name: Initialize Release
 
 on:
   workflow_call:
