@@ -1,4 +1,4 @@
-name: Post Build Release
+name: Create Release Artifacts
 
 on:
    workflow_call:
@@ -9,16 +9,9 @@ on:
             required: true
 
 jobs:
-  upload:
+  create-release-artifacts:
     runs-on: ubuntu-latest
     steps:
-      - name: Merge artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: buildArtifacts
-          pattern: buildArtifacts-*
-          delete-merged: true
-
       - name: Checkout caller repo
         uses: actions/checkout@master
         with:
@@ -35,16 +28,19 @@ jobs:
         with:
           node-version: "22.9.0"
 
-      - name: Download the artifacts gernerated from build
-        uses: actions/download-artifact@v4
-        with:
-          name: buildArtifacts
-          path: out/
-
       - name: CD into nested-ci, run npm ci
         run: |
           cd nested-ci
           npm ci
+
+      - name: Run build
+        run: npm run build;
+      
+      - name: Upload artifacts to Job
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildArtifacts-${{ github.event.inputs.branch }}
+          path: out/*
 
       - name: Run upload
         env:

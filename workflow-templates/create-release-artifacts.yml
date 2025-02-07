@@ -1,0 +1,19 @@
+name: Create Release Artifacts
+
+on:
+  pull_request:
+    types:
+      - reopened
+      - opened
+      - synchronize
+    paths:
+        - 'package.json'
+        - 'package-lock.json'
+
+jobs:
+  use-reusable-workflow:
+      uses: rokucommunity/.github/.github/workflows/create-release-artifact.yml@master
+      run-name: Create Release Artifacts
+      with:
+        branch: ${{ github.event.pull_request.head.ref }}
+      secrets: inherit

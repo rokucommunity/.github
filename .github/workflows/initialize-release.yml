@@ -1,4 +1,4 @@
-name: Stage Release
+name: Initialize Release
 
 on:
   workflow_call:
@@ -14,7 +14,7 @@ on:
         required: true
 
 jobs:
-  stage-release:
+  initialize-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout caller repo
@@ -53,4 +53,4 @@ jobs:
       - name: Create release
         env:
            GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-        run: npx ts-node nested-ci/src/cli.ts stage-release --releaseType "${{ github.event.inputs.releaseType }}" --branch "${{ github.event.inputs.branch }}"
+        run: npx ts-node nested-ci/src/cli.ts initialize-release --releaseType "${{ github.event.inputs.releaseType }}" --branch "${{ github.event.inputs.branch }}"

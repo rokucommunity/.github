@@ -1,4 +1,4 @@
-name: Stage Release
+name: Initialize Release
 
 on:
   workflow_dispatch:
@@ -19,8 +19,8 @@ on:
           - patch
 
 jobs:
-  call:
-    uses: rokucommunity/.github/.github/workflows/stage-release.yml@master
+  use-reusable-workflow:
+    uses: rokucommunity/.github/.github/workflows/initialize-release.yml@master
     with:
       branch: ${{ github.event.inputs.branch }}
       releaseType: ${{ github.event.inputs.releaseType }}

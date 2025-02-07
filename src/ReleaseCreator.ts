@@ -25,8 +25,8 @@ export class ReleaseCreator {
         });
     }
 
-    public async stageRelease(options: { releaseType: ReleaseType | string, branch: string }) {
-        logger.log(`Staging release... releaseType: ${options.releaseType}, branch: ${options.branch}`);
+    public async initializeRelease(options: { releaseType: ReleaseType | string, branch: string }) {
+        logger.log(`Intialize release... releaseType: ${options.releaseType}, branch: ${options.branch}`);
         logger.increaseIndent();
 
         logger.log(`Checking for a clean repository`);

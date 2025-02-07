@@ -1,4 +1,0 @@
-{
-    "name": "On Dispatch Stage Release",
-    "description": "Dispatch workflow that kicks of a release. The branch and release type are specified in the dispatch payload."
-}
