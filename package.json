@@ -4,6 +4,7 @@
   "description": "Repo to test the new release flow",
   "main": "index.js",
   "scripts": {
+    "package": "echo \"Hello World!\" > hello.tgz",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
