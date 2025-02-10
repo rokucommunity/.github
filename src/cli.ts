@@ -22,6 +22,7 @@ let options = yargs
     .command('upload-release', 'Upload release artifacts to GitHub release', (builder) => {
         return builder
             .option('branch', { type: 'string', description: 'The branch the release is based on' })
+            .option('assetGlob', { type: 'string', description: 'The glob pattern used to get release artifact(s)' })
     }, (argv) => {
         new ReleaseCreator().uploadRelease(argv).catch(e => {
             console.error(e);
