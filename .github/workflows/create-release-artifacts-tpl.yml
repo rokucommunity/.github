@@ -1,4 +1,4 @@
-name: Create Release Artifacts
+name: Create Release Artifacts Template
 
 on:
   pull_request:
