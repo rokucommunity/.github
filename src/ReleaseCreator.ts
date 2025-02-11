@@ -94,7 +94,7 @@ export class ReleaseCreator {
         logger.decreaseIndent();
     }
 
-    public async uploadRelease(options: { branch: string, assetsGlob: string }) {
+    public async uploadRelease(options: { branch: string, assetGlob: string }) {
         logger.log(`Upload release... branch: ${options.branch}`);
         logger.increaseIndent();
 
@@ -138,7 +138,7 @@ export class ReleaseCreator {
         logger.decreaseIndent();
 
         logger.log(`Get artifacts from the build`)
-        const artifacts = fastGlob.sync(options.assetsGlob, { absolute: false })
+        const artifacts = fastGlob.sync(options.assetGlob, { absolute: false })
 
         logger.log(`Uploading artifacts`);
         logger.increaseIndent();
