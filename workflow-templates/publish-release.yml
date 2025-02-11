@@ -14,7 +14,7 @@ jobs:
     uses: rokucommunity/.github/.github/workflows/publish-release.yml@master
     with:
       branch: ${{ github.event.pull_request.head.ref }}
-      publish-store: "npm" # "vscode"
+      publish-store: "npm" # "vsce"
     secrets: inherit
 
     

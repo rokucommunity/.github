@@ -105,7 +105,7 @@ export class ReleaseCreator {
 
         logger.log(`Find the existing release ${releaseVersion}`);
         const releases = await this.listGitHubReleases(repoName);
-        let draftRelease = releases.find(r => r.tag_name === releaseVersion);
+        let draftRelease = releases.find(r => r.tag_name === releaseVersion && r.draft);
         if (draftRelease) {
             logger.log(`Found release ${releaseVersion}`);
         } else {
@@ -167,9 +167,70 @@ export class ReleaseCreator {
         logger.decreaseIndent();
     }
 
-    public async publishRelease(options: { branch: string, releaseStores: string[] }) {
-        //mark github release as published
-        //release artifcats to the approriate store / manager (npm, vscode)
+    public async publishRelease(options: { branch: string, releaseStore: string }) {
+        logger.log(`publish release... branch: ${options.branch}, releaseStores: ${options.releaseStore}`);
+        logger.increaseIndent();
+
+        logger.log(`Get the repository name`);
+        const repoName = this.getRepositoryName();
+
+        const releaseVersion = await this.getVersion();
+
+        logger.log(`Find the existing release ${releaseVersion}`);
+        const releases = await this.listGitHubReleases(repoName);
+        let draftRelease = releases.find(r => r.tag_name === releaseVersion);
+        let shouldMarkAsPublished = true;
+        if (draftRelease?.draft) {
+            shouldMarkAsPublished = false;
+            logger.log(`Release ${releaseVersion} is not a draft`);
+        } else if (draftRelease) {
+            logger.log(`Found release ${releaseVersion}`);
+        } else {
+            throw new Error(`Release ${releaseVersion} does not exist`);
+        }
+
+        if (shouldMarkAsPublished) {
+            logger.log(`Remove draft status from release ${releaseVersion}`);
+            await this.octokit.rest.repos.updateRelease({
+                owner: this.ORG,
+                repo: repoName,
+                release_id: draftRelease.id,
+                draft: false
+            });
+        } else {
+            logger.log(`Release ${releaseVersion} is already published`);
+        }
+
+        logger.log(`Get all existing release assets for ${repoName}`);
+        let assets = await this.octokitPageHelper((page: number) => {
+            let result = this.octokit.repos.listReleaseAssets({
+                owner: this.ORG,
+                repo: repoName,
+                release_id: draftRelease.id,
+            });
+            return result;
+        });
+
+        logger.increaseIndent();
+        for (const asset of assets) {
+            logger.log(`Release asset: ${asset.name}`);
+        }
+        logger.decreaseIndent();
+
+
+        //TODO figure out how to specify the artifact to publish
+        logger.log(`Publishing artifacts`);
+        logger.increaseIndent();
+        if (options.releaseStore === 'npm') {
+            logger.log(`Publishing to npm`);
+            // utils.executeCommand(`npm publish`);
+        } else if (options.releaseStore === 'vsce') {
+            logger.log(`Publishing to vscode`);
+            // utils.executeCommand(`npx vsce publish`);
+        }
+        logger.decreaseIndent();
+
+        logger.decreaseIndent();
     }
 
     public async deleteRelease(options: { releaseVersion: string }) {

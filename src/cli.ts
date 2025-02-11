@@ -32,8 +32,9 @@ let options = yargs
     .command('publish-release', 'Publish GitHub release, push artifacts for public use', (builder) => {
         return builder
             .option('branch', { type: 'string', description: 'The branch the release is based on' })
+            .option('releaseStore', { type: 'string', description: 'The store we are releasing to' })
     }, (argv) => {
-        new ReleaseCreator().publishRelease({ ...argv, releaseStores: [] }).catch(e => {
+        new ReleaseCreator().publishRelease(argv).catch(e => {
             console.error(e);
             process.exit(1);
         });
