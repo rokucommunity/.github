@@ -16,5 +16,5 @@ jobs:
       with:
         branch: ${{ github.event.pull_request.head.ref }}
         node-version: "22.9.0"
-        asset-paths: "./*.tgz" # "*.vsix"
+        artifact-paths: "./*.tgz" # "*.vsix"
       secrets: inherit

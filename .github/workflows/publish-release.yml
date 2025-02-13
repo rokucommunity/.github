@@ -8,9 +8,9 @@ on:
             type: string
             description: "The branch to create the release from"
             required: true
-        publish-store:
+        release-type:
             type: string
-            description: "The store to publish the release to"
+            description: "The type of release. Can be 'npm` or 'vsce'"
             required: true
 
 jobs:
@@ -41,4 +41,4 @@ jobs:
       - name: Run publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: npx ts-node nested-ci/src/cli.ts publish-release --branch ${{ github.event.inputs.branch }} --publishStore ${{ github.event.inputs.publish-store }}
+        run: npx ts-node nested-ci/src/cli.ts publish-release --branch ${{ github.event.inputs.branch }} --releaseType ${{ github.event.inputs.release-type }}

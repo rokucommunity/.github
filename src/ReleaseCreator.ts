@@ -74,18 +74,18 @@ export class ReleaseCreator {
         await this.octokit.rest.repos.createRelease({
             owner: this.ORG,
             repo: repoName,
-            tag_name: releaseVersion,
+            tag_name: `v${releaseVersion}`,
             name: releaseVersion,
             body: `Release ${releaseVersion}`,
             draft: true
         });
 
-        logger.log(`Create pull request in ${repoName}: release/${releaseVersion} -> ${options.branch}`);
+        logger.log(`Create pull request in ${repoName}: release / ${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
             owner: this.ORG,
             repo: repoName,
             title: releaseVersion,
-            head: `release/${releaseVersion}`,
+            head: `release / ${releaseVersion}`,
             body: `Release ${releaseVersion}`,
             base: options.branch,
             draft: false
@@ -94,8 +94,8 @@ export class ReleaseCreator {
         logger.decreaseIndent();
     }
 
-    public async uploadRelease(options: { branch: string, assetGlob: string }) {
-        logger.log(`Upload release... branch: ${options.branch}`);
+    public async uploadRelease(options: { branch: string, artifactPaths: string }) {
+        logger.log(`Upload release...branch: ${options.branch}`);
         logger.increaseIndent();
 
         logger.log(`Get the repository name`);
@@ -105,7 +105,7 @@ export class ReleaseCreator {
 
         logger.log(`Find the existing release ${releaseVersion}`);
         const releases = await this.listGitHubReleases(repoName);
-        let draftRelease = releases.find(r => r.tag_name === releaseVersion && r.draft);
+        let draftRelease = releases.find(r => r.tag_name === `v${releaseVersion}` && r.draft);
         if (draftRelease) {
             logger.log(`Found release ${releaseVersion}`);
         } else {
@@ -130,21 +130,21 @@ export class ReleaseCreator {
                 asset_id: asset.id
             });
             if (deleteResponse.status === 204) {
-                logger.log(`Deleted asset ${asset.name}`);
+                logger.log(`Deleted asset ${asset.name} `);
             } else {
-                logger.log(`Failed to delete asset ${asset.name}`);
+                logger.log(`Failed to delete asset ${asset.name} `);
             }
         }
         logger.decreaseIndent();
 
         logger.log(`Get artifacts from the build`)
-        const artifacts = fastGlob.sync(options.assetGlob, { absolute: false })
+        const artifacts = fastGlob.sync(options.artifactPaths, { absolute: false })
 
         logger.log(`Uploading artifacts`);
         logger.increaseIndent();
         for (const artifact of artifacts) {
             const fileName = artifact.split('/').pop();
-            logger.log(`Uploading ${fileName}`);
+            logger.log(`Uploading ${fileName} `);
             const uploadResponse = await this.octokit.repos.uploadReleaseAsset({
                 owner: this.ORG,
                 repo: repoName,
@@ -157,9 +157,9 @@ export class ReleaseCreator {
                 }
             });
             if (uploadResponse.status === 201) {
-                logger.log(`Uploaded asset ${fileName}`);
+                logger.log(`Uploaded asset ${fileName} `);
             } else {
-                logger.log(`Failed to upload asset ${fileName}`);
+                logger.log(`Failed to upload asset ${fileName} `);
             }
         }
         logger.decreaseIndent();
@@ -167,8 +167,8 @@ export class ReleaseCreator {
         logger.decreaseIndent();
     }
 
-    public async publishRelease(options: { branch: string, releaseStore: string }) {
-        logger.log(`publish release... branch: ${options.branch}, releaseStores: ${options.releaseStore}`);
+    public async publishRelease(options: { branch: string, releaseType: string }) {
+        logger.log(`publish release...branch: ${options.branch}, releaseType: ${options.releaseType} `);
         logger.increaseIndent();
 
         logger.log(`Get the repository name`);
@@ -176,21 +176,21 @@ export class ReleaseCreator {
 
         const releaseVersion = await this.getVersion();
 
-        logger.log(`Find the existing release ${releaseVersion}`);
+        logger.log(`Find the existing release ${releaseVersion} `);
         const releases = await this.listGitHubReleases(repoName);
-        let draftRelease = releases.find(r => r.tag_name === releaseVersion);
+        let draftRelease = releases.find(r => r.tag_name === `v${releaseVersion}`);
         let shouldMarkAsPublished = true;
         if (draftRelease?.draft) {
             shouldMarkAsPublished = false;
             logger.log(`Release ${releaseVersion} is not a draft`);
         } else if (draftRelease) {
-            logger.log(`Found release ${releaseVersion}`);
+            logger.log(`Found release ${releaseVersion} `);
         } else {
             throw new Error(`Release ${releaseVersion} does not exist`);
         }
 
         if (shouldMarkAsPublished) {
-            logger.log(`Remove draft status from release ${releaseVersion}`);
+            logger.log(`Remove draft status from release ${releaseVersion} `);
             await this.octokit.rest.repos.updateRelease({
                 owner: this.ORG,
                 repo: repoName,
@@ -213,7 +213,7 @@ export class ReleaseCreator {
 
         logger.increaseIndent();
         for (const asset of assets) {
-            logger.log(`Release asset: ${asset.name}`);
+            logger.log(`Release asset: ${asset.name} `);
         }
         logger.decreaseIndent();
 
@@ -221,12 +221,12 @@ export class ReleaseCreator {
         //TODO figure out how to specify the artifact to publish
         logger.log(`Publishing artifacts`);
         logger.increaseIndent();
-        if (options.releaseStore === 'npm') {
-            logger.log(`Publishing to npm`);
-            // utils.executeCommand(`npm publish`);
-        } else if (options.releaseStore === 'vsce') {
-            logger.log(`Publishing to vscode`);
-            // utils.executeCommand(`npx vsce publish`);
+        if (options.releaseType === 'npm') {
+            logger.log(`Publishing ${assets[0]} to npm`);
+            // utils.executeCommand(`npm publish ${ assets[0] } `);
+        } else if (options.releaseType === 'vsce') {
+            logger.log(`Publishing ${assets[0]} to vscode`);
+            // utils.executeCommand(`npx vsce publish ${ assets[0] } `);
         }
         logger.decreaseIndent();
 
@@ -234,25 +234,25 @@ export class ReleaseCreator {
     }
 
     public async deleteRelease(options: { releaseVersion: string }) {
-        logger.log(`Delete release... version: ${options.releaseVersion}`);
+        logger.log(`Delete release...version: ${options.releaseVersion} `);
         logger.increaseIndent();
 
         logger.log(`Get the repository name`);
         let repoName = this.getRepositoryName();
 
-        logger.log(`Find the existing release ${options.releaseVersion}`);
+        logger.log(`Find the existing release ${options.releaseVersion} `);
         const releases = await this.listGitHubReleases(repoName);
-        let draftRelease = releases.find(r => r.tag_name === options.releaseVersion && r.draft);
+        let draftRelease = releases.find(r => r.tag_name === `v${options.releaseVersion}` && r.draft);
         if (draftRelease) {
             try {
-                logger.log(`Deleting release ${options.releaseVersion}`);
+                logger.log(`Deleting release ${options.releaseVersion} `);
                 await this.octokit.rest.repos.deleteRelease({
                     owner: this.ORG,
                     repo: repoName,
                     release_id: draftRelease.id
                 });
             } catch (error) {
-                logger.log(`Failed to delete release ${options.releaseVersion}`);
+                logger.log(`Failed to delete release ${options.releaseVersion} `);
             }
         }
 
@@ -261,7 +261,7 @@ export class ReleaseCreator {
             owner: this.ORG,
             repo: repoName,
             state: 'open',
-            head: `release/${options.releaseVersion}`
+            head: `release / ${options.releaseVersion} `
         });
         if (pullRequest.data.length > 0) {
             for (const pr of pullRequest.data) {
@@ -272,44 +272,44 @@ export class ReleaseCreator {
                         pull_number: pr.number,
                         state: 'closed'
                     });
-                    logger.log(`Closed pull request ${pr.number}`);
+                    logger.log(`Closed pull request ${pr.number} `);
                 } catch (error) {
-                    logger.log(`Failed to close pull request ${pr.number}`);
+                    logger.log(`Failed to close pull request ${pr.number} `);
                 }
             }
         }
 
         try {
-            logger.log(`Delete branch release/${options.releaseVersion}`);
+            logger.log(`Delete branch release / ${options.releaseVersion} `);
             await this.octokit.rest.git.deleteRef({
                 owner: this.ORG,
                 repo: repoName,
-                ref: `heads/release/${options.releaseVersion}`
+                ref: `heads / release / ${options.releaseVersion} `
             });
         } catch (error) {
-            logger.log(`Failed to delete branch release/${options.releaseVersion}`);
+            logger.log(`Failed to delete branch release / ${options.releaseVersion} `);
         }
         logger.decreaseIndent();
     }
 
     private async getVersion() {
         const packageJson = await fsExtra.readJson(path.join(process.cwd(), 'package.json'));
-        logger.log(`Current version: ${packageJson.version}`);
+        logger.log(`Current version: ${packageJson.version} `);
 
         return packageJson.version;
     }
 
     private async getNewVersion(releaseType: ReleaseType) {
         const packageJson = await fsExtra.readJson(path.join(process.cwd(), 'package.json'));
-        logger.log(`Current version: ${packageJson.version}`);
+        logger.log(`Current version: ${packageJson.version} `);
 
         return semver.inc(packageJson.version, releaseType);
     }
 
     private async incrementedVersion(releaseType: ReleaseType) {
         const version = await this.getNewVersion(releaseType);
-        logger.log(`Increment version on package.json to ${version}`);
-        utils.executeCommand(`npm version ${version} --no-commit-hooks --no-git-tag-version`);
+        logger.log(`Increment version on package.json to ${version} `);
+        utils.executeCommand(`npm version ${version} --no - commit - hooks--no - git - tag - version`);
 
         return version;
     }
@@ -329,9 +329,9 @@ export class ReleaseCreator {
 
     private getRepositoryName() {
         // This is neccessary because this code is intended to run in different repositories
-        const repoPath = utils.executeCommandWithOutput(`git rev-parse --show-toplevel`).trim();
+        const repoPath = utils.executeCommandWithOutput(`git rev - parse--show - toplevel`).trim();
         const repoName = require("path").basename(repoPath)
-        logger.log(`Repository name: ${repoName}`);
+        logger.log(`Repository name: ${repoName} `);
         return repoName;
     }
 

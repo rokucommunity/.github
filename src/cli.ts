@@ -22,7 +22,7 @@ let options = yargs
     .command('upload-release', 'Upload release artifacts to GitHub release', (builder) => {
         return builder
             .option('branch', { type: 'string', description: 'The branch the release is based on' })
-            .option('assetGlob', { type: 'string', description: 'The glob pattern used to get release artifact(s)' })
+            .option('artifactPaths', { type: 'string', description: 'The glob pattern used to get release artifact(s)' })
     }, (argv) => {
         new ReleaseCreator().uploadRelease(argv).catch(e => {
             console.error(e);
@@ -32,7 +32,7 @@ let options = yargs
     .command('publish-release', 'Publish GitHub release, push artifacts for public use', (builder) => {
         return builder
             .option('branch', { type: 'string', description: 'The branch the release is based on' })
-            .option('releaseStore', { type: 'string', description: 'The store we are releasing to' })
+            .option('releaseType', { type: 'string', description: 'The store we are releasing to' })
     }, (argv) => {
         new ReleaseCreator().publishRelease(argv).catch(e => {
             console.error(e);

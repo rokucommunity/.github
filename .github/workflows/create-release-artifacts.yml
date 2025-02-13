@@ -12,7 +12,7 @@ on:
             type: string
             description: "The node version to use"
             required: true
-        asset-paths:
+        artifact-paths:
             type: string
             description: "The glob patters to find the release artifacts"
             required: true
@@ -48,4 +48,4 @@ jobs:
       - name: Run upload
         env:
           GH_TOKEN: ${{ github.token }}
-        run: npx ts-node nested-ci/src/cli.ts upload-release --branch ${{ github.event.inputs.branch }} --assetGlob ${{ github.event.inputs.asset-paths }}
+        run: npx ts-node nested-ci/src/cli.ts upload-release --branch ${{ github.event.inputs.branch }} --artifactPaths ${{ github.event.inputs.artifact-paths }}
