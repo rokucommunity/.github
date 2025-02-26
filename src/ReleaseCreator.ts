@@ -7,8 +7,13 @@ import fetch from 'node-fetch';
 import { option } from 'yargs';
 import { logger, utils } from './utils';
 import { Octokit } from '@octokit/rest';
+import { ChangelogGenerator } from './ChangeLogGenerator';
 
 type ReleaseType = 'major' | 'minor' | 'patch';
+
+/**
+ * This class is responsible for managing the local git repository, GitHub PRs, and GitHub Releases
+**/
 
 export class ReleaseCreator {
     private octokit: Octokit;
@@ -61,10 +66,20 @@ export class ReleaseCreator {
             throw new Error(`Cannot create release branch release/${releaseVersion}`);
         }
 
-        logger.log(`Create commit with version increment`);
+        logger.log(`Update the changelog`);
+        new ChangelogGenerator().updateChangeLog({
+            project: repoName,
+            test: true,
+            force: false
+        }).catch(e => {
+            console.error(e);
+            process.exit(1);
+        });
+
+        logger.log(`Create commit with version increment and changelog updates`);
         await this.incrementedVersion(options.releaseType as ReleaseType);
         utils.executeCommandWithOutput(`git status`);
-        utils.executeCommandWithOutput(`git add package.json package-lock.json`);
+        utils.executeCommandWithOutput(`git add package.json package-lock.json CHANGELOG.md`);
         utils.executeCommandWithOutput(`git commit -m 'Increment version to ${releaseVersion}'`);
 
         logger.log(`Push up the release branch`);

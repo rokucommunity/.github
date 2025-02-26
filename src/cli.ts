@@ -3,6 +3,7 @@ import * as yargs from 'yargs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { ReleaseCreator } from './ReleaseCreator';
+import { ChangelogGenerator } from './ChangeLogGenerator';
 
 let options = yargs
     .command('initialize-release', 'Initialize a release PR, draft GitHub release', (builder) => {
@@ -44,6 +45,20 @@ let options = yargs
             .option('releaseVersion', { type: 'string', description: 'The version the release is based on' })
     }, (argv) => {
         new ReleaseCreator().deleteRelease(argv).catch(e => {
+            console.error(e);
+            process.exit(1);
+        });
+    })
+    .command('update-changelog', 'Update the changelog file with changes a given project and changes to dependecies for that project', (builder) => {
+        return builder
+            .option('project', { type: 'string', description: 'The name the project being updated' })
+    }, (argv) => {
+        let options = {
+            project: argv.project,
+            test: true,
+            force: false
+        }
+        new ChangelogGenerator().updateChangeLog(options).catch(e => {
             console.error(e);
             process.exit(1);
         });

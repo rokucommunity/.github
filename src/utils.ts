@@ -14,9 +14,9 @@ export class logger {
         return logger.instance;
     }
 
-    static log(message: string) {
+    static log(...messages: any[]) {
         const logger = this.getInstance();
-        console.log(`${logger.indentChar.repeat(logger.indentLevel)}${message}`);
+        console.log(`${logger.indentChar.repeat(logger.indentLevel)}`, ...messages);
     }
 
     static increaseIndent() {
@@ -36,14 +36,14 @@ export class utils {
     }
     static executeCommand(command: string) {
         if (!utils.verbose) {
-            command = `${command} > /dev/null 2>&1`;
+            command = `${command} > /dev/null 2 >& 1`;
         }
         execSync(command, { cwd: process.cwd() });
     }
 
     static executeCommandSucceeds(command: string) {
         if (!utils.verbose) {
-            command = `${command} > /dev/null 2>&1`;
+            command = `${command} > /dev/null 2 >& 1`;
         }
         try {
             return (execSync(`${command} && echo 1`, { cwd: process.cwd() })?.toString().trim() === '1');
@@ -53,6 +53,6 @@ export class utils {
     }
 
     static executeCommandWithOutput(command: string) {
-        return execSync(`${command}`).toString().trim();
+        return execSync(`${command} `).toString().trim();
     }
 }
