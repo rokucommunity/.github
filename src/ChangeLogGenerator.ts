@@ -21,7 +21,13 @@ export class ChangelogGenerator {
     public async updateChangeLog(options: ChangelogGenerator['options']) {
         logger.log(`Updating changelog for project ${options.project}`);
         logger.increaseIndent();
-        this.options = options;
+
+        if (!fsExtra.existsSync(s`CHANGELOG.md`)) {
+            logger.log('No CHANGELOG.md file found. Skipping');
+            logger.decreaseIndent();
+            return;
+        }
+
         logger.log('Creating tempDir', this.tempDir);
         fsExtra.emptyDirSync(this.tempDir);
 
@@ -33,16 +39,20 @@ export class ChangelogGenerator {
         const project = this.projects.filter(x => options.project.length === 0 || options.project.includes(x.name))?.at(0);
 
         const lastTag = this.getLastTag(project.dir);
-        logger.log(project, `Last release was ${lastTag}`);
+        const latestReleaseVersion = lastTag.replace(/^v/, '');
+        logger.log(`Last release was ${lastTag}`);
+
+        this.installDependencies(project, latestReleaseVersion);
 
         this.computeChanges(project, lastTag);
 
-        if (!this.options.force && project.changes.length === 0) {
-            logger.log(project, 'Nothing has changed since last release');
+        if (!options.force && project.changes.length === 0) {
+            logger.log('Nothing has changed since last release');
             return;
         }
 
         const lines = this.getChangeLogs(project, lastTag);
+        logger.log(lines)
 
         //assume the project running this command is the project being updated
         const changelogPath = s`CHANGELOG.md`;
@@ -108,6 +118,32 @@ export class ChangelogGenerator {
         }
 
         return lines;
+    }
+
+    private getDependencyVersionFromRelease(project: Project, releaseVersion: string, packageName: string, dependencyType: 'dependencies' | 'devDependencies') {
+        const output = execSync(`git show v${releaseVersion}:package.json`, { cwd: project.dir }).toString();
+        const packageJson = JSON.parse(output);
+        const version = packageJson?.[dependencyType][packageName];
+        return /\d+\.\d+\.\d+/.exec(version)?.[0] as string;
+    }
+
+    private installDependencies(project: Project, latestReleaseVersion: string) {
+        logger.log('installing', project.dependencies.length, 'dependencies and', project.devDependencies.length, 'devDependencies');
+
+        const install = (project: Project, dependencyType: 'dependencies' | 'devDependencies', flags?: string) => {
+            for (const dependency of project[dependencyType]) {
+                dependency.previousReleaseVersion = this.getDependencyVersionFromRelease(project, latestReleaseVersion, dependency.name, dependencyType);
+                const currentVersion = fsExtra.readJsonSync(s`${project.dir}/node_modules/${dependency.name}/package.json`).version;
+
+                execSync(`npm install ${dependency.name}@latest`, { cwd: project.dir, stdio: 'inherit' });
+
+                dependency.newVersion = fsExtra.readJsonSync(s`${project.dir}/node_modules/${dependency.name}/package.json`).version;
+
+                if (dependency.newVersion !== currentVersion) {
+                    logger.log(`Updated ${dependency.name} from ${currentVersion} to ${dependency.newVersion}`);
+                }
+            }
+        };
     }
 
     private computeChanges(project: Project, lastTag: string) {
