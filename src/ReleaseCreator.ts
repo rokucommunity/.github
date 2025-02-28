@@ -130,9 +130,11 @@ export class ReleaseCreator {
         logger.log(`Find the existing release ${releaseVersion}`);
         const releases = await this.listGitHubReleases(repoName);
         releases.forEach(r => logger.log(`Release: ${r.tag_name} `));
-        let draftRelease = releases.find(r => r.tag_name === `v${releaseVersion}` && r.draft);
+        let draftRelease = releases.find(r => r.tag_name === `v${releaseVersion}`);
         if (!draftRelease) {
             throw new Error(`Release ${releaseVersion} does not exist`);
+        } else if (draftRelease.draft === false) {
+            throw new Error(`Release ${releaseVersion} already published`);
         }
         logger.log(`Found release ${releaseVersion}`);
 
