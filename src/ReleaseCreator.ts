@@ -72,7 +72,7 @@ export class ReleaseCreator {
         }
 
         logger.log(`Update the changelog`);
-        new ChangelogGenerator().updateChangeLog({
+        await new ChangelogGenerator().updateChangeLog({
             project: repoName,
             test: true,
             force: false
