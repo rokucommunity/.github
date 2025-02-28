@@ -14,6 +14,13 @@ export class logger {
         return logger.instance;
     }
 
+    static inLog(...messages: any[]) {
+        const logger = this.getInstance();
+        logger.indentLevel += 4;
+        console.log(`${logger.indentChar.repeat(logger.indentLevel)}`, ...messages);
+        logger.indentLevel -= 4;
+    }
+
     static log(...messages: any[]) {
         const logger = this.getInstance();
         console.log(`${logger.indentChar.repeat(logger.indentLevel)}`, ...messages);
@@ -32,20 +39,23 @@ export class utils {
     static verbose = true;
 
     static execute(command: string) {
+        logger.inLog(`Executing ${command}`);
         execSync(command, { cwd: process.cwd() });
     }
     static executeCommand(command: string) {
         if (!utils.verbose) {
-            command = `${command} > /dev/null 2 >& 1`;
+            command = `${command} > /dev/null 2>& 1`;
         }
+        logger.inLog(`Executing ${command}`);
         execSync(command, { cwd: process.cwd() });
     }
 
     static executeCommandSucceeds(command: string) {
         if (!utils.verbose) {
-            command = `${command} > /dev/null 2 >& 1`;
+            command = `${command} > /dev/null 2>& 1`;
         }
         try {
+            logger.inLog(`Executing ${command}`);
             return (execSync(`${command} && echo 1`, { cwd: process.cwd() })?.toString().trim() === '1');
         } catch (e) {
             return false;
@@ -53,6 +63,7 @@ export class utils {
     }
 
     static executeCommandWithOutput(command: string) {
+        logger.inLog(`Executing ${command}`);
         return execSync(`${command} `).toString().trim();
     }
 }
