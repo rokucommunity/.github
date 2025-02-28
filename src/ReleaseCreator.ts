@@ -30,6 +30,11 @@ export class ReleaseCreator {
         });
     }
 
+    /**
+     * This method initializes a release by creating a new branch, 
+     * updating the changelog and version, creating a release pull request
+     * and creating a GitHub release
+     */
     public async initializeRelease(options: { releaseType: ReleaseType | string, branch: string }) {
         logger.log(`Intialize release... releaseType: ${options.releaseType}, branch: ${options.branch}`);
         logger.increaseIndent();
@@ -109,6 +114,10 @@ export class ReleaseCreator {
         logger.decreaseIndent();
     }
 
+    /**
+     * Replaces the release artifacts to the GitHub release
+     * and add the changelog patch to the release notes
+     */
     public async uploadRelease(options: { branch: string, artifactPaths: string }) {
         logger.log(`Upload release...branch: ${options.branch}`);
         logger.increaseIndent();
@@ -120,12 +129,12 @@ export class ReleaseCreator {
 
         logger.log(`Find the existing release ${releaseVersion}`);
         const releases = await this.listGitHubReleases(repoName);
+        releases.forEach(r => logger.log(`Release: ${r.tag_name} `));
         let draftRelease = releases.find(r => r.tag_name === `v${releaseVersion}` && r.draft);
-        if (draftRelease) {
-            logger.log(`Found release ${releaseVersion}`);
-        } else {
+        if (!draftRelease) {
             throw new Error(`Release ${releaseVersion} does not exist`);
         }
+        logger.log(`Found release ${releaseVersion}`);
 
         logger.log(`Get all existing release assets for ${repoName}`);
         let assets = await this.octokitPageHelper((page: number) => {
@@ -179,9 +188,36 @@ export class ReleaseCreator {
         }
         logger.decreaseIndent();
 
+        logger.log(`Get the pull request for release ${releaseVersion}`);
+        const pullRequest = await this.octokit.rest.pulls.list({
+            owner: this.ORG,
+            repo: repoName,
+            state: 'open',
+            head: `release/${releaseVersion} `
+        });
+
+        logger.log(`Get the changelog file patch from the pull request`);
+        const pr = await this.octokit.rest.pulls.get({
+            owner: this.ORG,
+            repo: repoName,
+            pull_number: pullRequest.data[0].number
+        });
+
+        logger.log(`Add the changelog patch to the release notes`);
+        await this.octokit.rest.repos.updateRelease({
+            owner: this.ORG,
+            repo: repoName,
+            release_id: draftRelease.id,
+            body: pr.data.body
+        });
+
         logger.decreaseIndent();
     }
 
+    /**
+     * Marks the GitHub release as published 
+     * and releases the artifacts to the correct store
+     */
     public async publishRelease(options: { branch: string, releaseType: string }) {
         logger.log(`publish release...branch: ${options.branch}, releaseType: ${options.releaseType} `);
         logger.increaseIndent();
@@ -344,8 +380,8 @@ export class ReleaseCreator {
 
     private getRepositoryName() {
         // This is neccessary because this code is intended to run in different repositories
-        const repoPath = utils.executeCommandWithOutput(`git rev - parse--show - toplevel`).trim();
-        const repoName = require("path").basename(repoPath)
+        const repoPath = utils.executeCommandWithOutput(`git rev-parse --show-toplevel`).trim();
+        const repoName = require("path").basename(repoPath);
         logger.log(`Repository name: ${repoName} `);
         return repoName;
     }
