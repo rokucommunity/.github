@@ -38,32 +38,38 @@ export class logger {
 export class utils {
     static verbose = true;
 
-    static execute(command: string) {
-        logger.inLog(`Executing ${command}`);
-        execSync(command, { cwd: process.cwd() });
-    }
-    static executeCommand(command: string) {
+    static executeCommand(command: string, options?: { cwd: string }) {
+        if (!options.cwd) {
+            options.cwd = process.cwd();
+        }
         if (!utils.verbose) {
             command = `${command} > /dev/null 2>& 1`;
         }
         logger.inLog(`Executing ${command}`);
-        execSync(command, { cwd: process.cwd() });
+        execSync(command, options);
     }
 
-    static executeCommandSucceeds(command: string) {
+    static executeCommandSucceeds(command: string, options?: { cwd: string }) {
+        if (!options.cwd) {
+            options.cwd = process.cwd();
+        }
+
         if (!utils.verbose) {
             command = `${command} > /dev/null 2>& 1`;
         }
         try {
             logger.inLog(`Executing ${command}`);
-            return (execSync(`${command} && echo 1`, { cwd: process.cwd() })?.toString().trim() === '1');
+            return (execSync(`${command} && echo 1`, options)?.toString().trim() === '1');
         } catch (e) {
             return false;
         }
     }
 
-    static executeCommandWithOutput(command: string) {
+    static executeCommandWithOutput(command: string, options: { cwd: string }) {
+        if (!options.cwd) {
+            options.cwd = process.cwd();
+        }
         logger.inLog(`Executing ${command}`);
-        return execSync(`${command} `).toString().trim();
+        return execSync(`${command} `, options).toString().trim();
     }
 }

@@ -5,9 +5,8 @@
  */
 import * as fsExtra from 'fs-extra';
 import { standardizePath as s } from 'brighterscript';
-import { execSync, exec } from 'child_process';
 import * as semver from 'semver';
-import { logger } from './utils';
+import { logger, utils } from './utils';
 
 export class ChangelogGenerator {
     private tempDir = s`${__dirname}/../.tmp/.releases`;
@@ -73,7 +72,7 @@ export class ChangelogGenerator {
      * Find the year-month-day of the specified release from git logs
      */
     private getVersionDate(cwd: string, version: string) {
-        const logOutput = execSync('git log --tags --simplify-by-decoration --pretty="format:%ci %d"', { cwd: cwd }).toString();
+        const logOutput = utils.executeCommandWithOutput('git log --tags --simplify-by-decoration --pretty="format:%ci %d"', { cwd: cwd }).toString();
         const [, date] = new RegExp(String.raw`(\d+-\d+-\d+).*?tag:[ \t]*v${version.replace('.', '\\.')}`, 'gmi').exec(logOutput) ?? [];
         return date;
     }
@@ -121,7 +120,7 @@ export class ChangelogGenerator {
     }
 
     private getDependencyVersionFromRelease(project: Project, releaseVersion: string, packageName: string, dependencyType: 'dependencies' | 'devDependencies') {
-        const output = execSync(`git show v${releaseVersion}:package.json`, { cwd: project.dir }).toString();
+        const output = utils.executeCommandWithOutput(`git show v${releaseVersion}:package.json`, { cwd: project.dir }).toString();
         const packageJson = JSON.parse(output);
         const version = packageJson?.[dependencyType][packageName];
         return /\d+\.\d+\.\d+/.exec(version)?.[0] as string;
@@ -135,7 +134,7 @@ export class ChangelogGenerator {
                 dependency.previousReleaseVersion = this.getDependencyVersionFromRelease(project, latestReleaseVersion, dependency.name, dependencyType);
                 const currentVersion = fsExtra.readJsonSync(s`${project.dir}/node_modules/${dependency.name}/package.json`).version;
 
-                execSync(`npm install ${dependency.name}@latest`, { cwd: project.dir, stdio: 'inherit' });
+                utils.executeCommand(`npm install ${dependency.name}@latest`, { cwd: project.dir });
 
                 dependency.newVersion = fsExtra.readJsonSync(s`${project.dir}/node_modules/${dependency.name}/package.json`).version;
 
@@ -172,7 +171,7 @@ export class ChangelogGenerator {
         startVersion = startVersion.startsWith('v') ? startVersion : 'v' + startVersion;
         endVersion = endVersion.startsWith('v') || endVersion === 'HEAD' ? endVersion : 'v' + endVersion;
         const project = this.getProject(projectName);
-        const commitMessages = execSync(`git log ${startVersion}...${endVersion} --oneline`, {
+        const commitMessages = utils.executeCommandWithOutput(`git log ${startVersion}...${endVersion} --oneline`, {
             cwd: project?.dir
         }).toString()
             .split(/\r?\n/g)
@@ -201,7 +200,7 @@ export class ChangelogGenerator {
      */
     private getLastTag(cwd: string) {
         const allTags = semver.sort(
-            execSync(`git tag --sort version:refname`, { cwd: cwd })
+            utils.executeCommandWithOutput(`git tag --sort version:refname`, { cwd: cwd })
                 .toString()
                 .split(/\r?\n/)
                 .map(x => x.trim())
@@ -225,7 +224,8 @@ export class ChangelogGenerator {
         //clone the project
         project.dir = s`${this.tempDir}/${repoName}`;
         logger.log(`Cloning ${url}`);
-        execSync(`git clone "${url}" "${project.dir}"`);
+
+        utils.executeCommand(`git clone "${url}" "${project.dir}"`);
     }
 
     private projects: Project[] = [{
