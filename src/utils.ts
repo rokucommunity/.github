@@ -39,9 +39,8 @@ export class utils {
     static verbose = true;
 
     static executeCommand(command: string, options?: { cwd: string }) {
-        if (!options.cwd) {
-            options.cwd = process.cwd();
-        }
+        options ??= { cwd: process.cwd() };
+
         if (!utils.verbose) {
             command = `${command} > /dev/null 2>& 1`;
         }
@@ -50,9 +49,7 @@ export class utils {
     }
 
     static executeCommandSucceeds(command: string, options?: { cwd: string }) {
-        if (!options.cwd) {
-            options.cwd = process.cwd();
-        }
+        options ??= { cwd: process.cwd() };
 
         if (!utils.verbose) {
             command = `${command} > /dev/null 2>& 1`;
@@ -66,9 +63,8 @@ export class utils {
     }
 
     static executeCommandWithOutput(command: string, options?: { cwd: string }) {
-        if (!options.cwd) {
-            options.cwd = process.cwd();
-        }
+        options ??= { cwd: process.cwd() };
+
         logger.inLog(`Executing ${command}`);
         return execSync(`${command} `, options).toString().trim();
     }
