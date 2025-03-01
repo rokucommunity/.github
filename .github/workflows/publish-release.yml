@@ -20,7 +20,7 @@ jobs:
       - name: Checkout caller repo
         uses: actions/checkout@master
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ inputs.branch }}
 
       - name: Checkout .github repo
         uses: actions/checkout@master
@@ -41,4 +41,4 @@ jobs:
       - name: Run publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: npx ts-node nested-ci/src/cli.ts publish-release --branch ${{ github.event.inputs.branch }} --releaseType ${{ github.event.inputs.release-type }}
+        run: npx ts-node nested-ci/src/cli.ts publish-release --branch ${{ inputs.branch }} --releaseType ${{ inputs.release-type }}

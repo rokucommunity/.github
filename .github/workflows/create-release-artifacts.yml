@@ -24,7 +24,7 @@ jobs:
       - name: Checkout caller repo
         uses: actions/checkout@master
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ inputs.branch }}
 
       - name: Checkout .github repo
         uses: actions/checkout@master
@@ -35,7 +35,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@master
         with:
-          node-version: ${{ github.event.inputs.node-version }}
+          node-version: ${{ inputs.node-version }}
 
       - name: CD into nested-ci, run npm ci
         run: |
@@ -48,4 +48,4 @@ jobs:
       - name: Run upload
         env:
           GH_TOKEN: ${{ github.token }}
-        run: npx ts-node nested-ci/src/cli.ts upload-release --branch ${{ github.event.inputs.branch }} --artifactPaths ${{ github.event.inputs.artifact-paths }}
+        run: npx ts-node nested-ci/src/cli.ts upload-release --branch ${{ inputs.branch }} --artifactPaths ${{ inputs.artifact-paths }}
