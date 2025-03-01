@@ -65,7 +65,7 @@ export class utils {
         }
     }
 
-    static executeCommandWithOutput(command: string, options: { cwd: string }) {
+    static executeCommandWithOutput(command: string, options?: { cwd: string }) {
         if (!options.cwd) {
             options.cwd = process.cwd();
         }
