@@ -300,6 +300,12 @@ export class ChangelogGenerator {
         name: 'promises',
         npmName: '@rokucommunity/promises',
         dependencies: []
+    }, {
+        name: '.github',
+        dependencies: []
+    }, {
+        name: 'release-testing',
+        dependencies: []
     }].map(project => {
         const repoName = project.name.split('/').pop();
         return {
