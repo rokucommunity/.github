@@ -100,12 +100,12 @@ export class ReleaseCreator {
             draft: true
         });
 
-        logger.log(`Create pull request in ${repoName}: release / ${releaseVersion} -> ${options.branch}`);
+        logger.log(`Create pull request in ${repoName}: release/${releaseVersion} -> ${options.branch}`);
         const createResponse = await this.octokit.rest.pulls.create({
             owner: this.ORG,
             repo: repoName,
             title: releaseVersion,
-            head: `release / ${releaseVersion}`,
+            head: `release/${releaseVersion}`,
             body: `Release ${releaseVersion}`,
             base: options.branch,
             draft: false
@@ -314,7 +314,7 @@ export class ReleaseCreator {
             owner: this.ORG,
             repo: repoName,
             state: 'open',
-            head: `release / ${options.releaseVersion} `
+            head: `release/${options.releaseVersion} `
         });
         if (pullRequest.data.length > 0) {
             for (const pr of pullRequest.data) {
@@ -333,14 +333,14 @@ export class ReleaseCreator {
         }
 
         try {
-            logger.log(`Delete branch release / ${options.releaseVersion} `);
+            logger.log(`Delete branch release/${options.releaseVersion} `);
             await this.octokit.rest.git.deleteRef({
                 owner: this.ORG,
                 repo: repoName,
-                ref: `heads / release / ${options.releaseVersion} `
+                ref: `heads/release/${options.releaseVersion} `
             });
         } catch (error) {
-            logger.log(`Failed to delete branch release / ${options.releaseVersion} `);
+            logger.log(`Failed to delete branch release/${options.releaseVersion} `);
         }
         logger.decreaseIndent();
     }
@@ -362,7 +362,7 @@ export class ReleaseCreator {
     private async incrementedVersion(releaseType: ReleaseType) {
         const version = await this.getNewVersion(releaseType);
         logger.log(`Increment version on package.json to ${version} `);
-        utils.executeCommand(`npm version ${version} --no - commit - hooks--no - git - tag - version`);
+        utils.executeCommand(`npm version ${version} --no-commit-hooks --no-git-tag-version`);
 
         return version;
     }
