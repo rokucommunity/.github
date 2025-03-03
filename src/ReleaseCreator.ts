@@ -88,7 +88,7 @@ export class ReleaseCreator {
         utils.executeCommandWithOutput(`git tag v${releaseVersion}`);
 
         logger.log(`Push up the release branch`);
-        utils.executeCommand(`git push origin release/${releaseVersion}`);
+        utils.executeCommand(`git push --atomic origin release/${releaseVersion} v${releaseVersion}`);
 
         logger.log(`Create GitHub release for ${releaseVersion}`);
         await this.octokit.rest.repos.createRelease({
