@@ -74,7 +74,7 @@ export class ReleaseCreator {
         logger.log(`Update the changelog`);
         await new ChangelogGenerator().updateChangeLog({
             project: repoName,
-            test: true,
+            test: false,
             force: false
         }).catch(e => {
             console.error(e);
@@ -85,7 +85,7 @@ export class ReleaseCreator {
         await this.incrementedVersion(options.releaseType as ReleaseType);
         utils.executeCommandWithOutput(`git status`);
         utils.executeCommandWithOutput(`git add package.json package-lock.json CHANGELOG.md`);
-        utils.executeCommandWithOutput(`git commit -m 'Increment version to ${releaseVersion}'`);
+        utils.executeCommandWithOutput(`git commit -m 'Increment version to ${releaseVersion}' --tag v${releaseVersion}`);
 
         logger.log(`Push up the release branch`);
         utils.executeCommand(`git push origin release/${releaseVersion}`);
@@ -362,7 +362,7 @@ export class ReleaseCreator {
     private async incrementedVersion(releaseType: ReleaseType) {
         const version = await this.getNewVersion(releaseType);
         logger.log(`Increment version on package.json to ${version}`);
-        utils.executeCommand(`npm version ${version} --no-commit-hooks`);
+        utils.executeCommand(`npm version ${version} --no-commit-hooks --no-git-tag-version`);
 
         return version;
     }
