@@ -343,6 +343,18 @@ export class ReleaseCreator {
         } catch (error) {
             logger.log(`Failed to delete branch release/${options.releaseVersion}`);
         }
+
+        try {
+            logger.log(`Delete tag v${options.releaseVersion}`);
+            await this.octokit.rest.git.deleteRef({
+                owner: this.ORG,
+                repo: repoName,
+                ref: `tags/v${options.releaseVersion}`
+            });
+        } catch (error) {
+            logger.log(`Failed to delete tag v${options.releaseVersion}`);
+        }
+
         logger.decreaseIndent();
     }
 
