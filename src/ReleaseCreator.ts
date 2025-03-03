@@ -210,6 +210,7 @@ export class ReleaseCreator {
             owner: this.ORG,
             repo: repoName,
             release_id: draftRelease.id,
+            tag_name: draftRelease.tag_name,
             body: pr.data.body
         });
 
