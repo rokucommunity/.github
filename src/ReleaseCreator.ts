@@ -8,6 +8,7 @@ import { option } from 'yargs';
 import { logger, utils } from './utils';
 import { Octokit } from '@octokit/rest';
 import { ChangelogGenerator } from './ChangeLogGenerator';
+import * as diffParse from 'parse-diff';
 
 type ReleaseType = 'major' | 'minor' | 'patch';
 
@@ -199,19 +200,33 @@ export class ReleaseCreator {
         });
 
         logger.log(`Get the changelog file patch from the pull request`);
-        const pr = await this.octokit.rest.pulls.get({
+        const { data: files } = await this.octokit.rest.pulls.listFiles({
             owner: this.ORG,
             repo: repoName,
             pull_number: pullRequest.data[0].number
         });
 
-        logger.log(`Add the changelog patch to the release notes`);
+        const changelogFile = files.find(f => f.filename === 'CHANGELOG.md');
+        const parsedPatch = diffParse.default(changelogFile.patch);
+        let lines = [];
+        parsedPatch?.at(0)?.chunks.forEach(chunk => {
+            chunk.changes.forEach(change => {
+                // only add new lines to the patch notes
+                if (change.type === 'add') {
+                    lines.push(change.content.slice(1));
+                }
+            });
+        });
+        const patchNotes = lines.join('\n');
+        logger.log(`Changelog patch: ${patchNotes}`);
+
+        logger.log(`Add the changelog patch notes to the release notes`);
         await this.octokit.rest.repos.updateRelease({
             owner: this.ORG,
             repo: repoName,
             release_id: draftRelease.id,
             tag_name: draftRelease.tag_name,
-            body: pr.data.body
+            body: patchNotes
         });
 
         logger.decreaseIndent();
