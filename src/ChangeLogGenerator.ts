@@ -44,7 +44,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
         const project = this.projects.filter(x => options.project.length === 0 || options.project.includes(x.name))?.at(0);
 
-        const lastTag = this.getLastTag(project.dir);
+        let lastTag = this.getLastTag(project.dir);
+        if (!lastTag) {
+            logger.log('No tags found. Creating initial tag v0.0.0. on first commit');
+            const firstCommit = utils.executeCommandWithOutput('git log --reverse --pretty=format:"%H"').toString().trim();
+            utils.executeCommand(`git tag v0.0.0 ${firstCommit}`, { cwd: project.dir });
+            lastTag = this.getLastTag(project.dir);
+        }
         const latestReleaseVersion = lastTag.replace(/^v/, '');
         logger.log(`Last release was ${lastTag}`);
 
