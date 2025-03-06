@@ -49,10 +49,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
         let lastTag = this.getLastTag(project.dir);
         if (!lastTag) {
+            //TODO I don't like this code existing here. This class should only modify the changelog, not create tags
             logger.log('No tags found. Creating initial tag v0.0.0 on first commit');
             const firstCommit = utils.executeCommandWithOutput('git rev-list --max-parents=0 HEAD').toString().trim();
             utils.executeCommand(`git tag v0.0.0 ${firstCommit}`, { cwd: project.dir });
-            utils.executeCommand(`git push origin v0.0.0`, { cwd: project.dir });
+            utils.executeCommand(`git push origin --tags`, { cwd: project.dir });
             lastTag = this.getLastTag(project.dir);
         }
         const latestReleaseVersion = lastTag.replace(/^v/, '');
