@@ -42,7 +42,7 @@ export class utils {
         options ??= { cwd: process.cwd() };
 
         if (!utils.verbose) {
-            command = `${command} > /dev/null 2>& 1`;
+            command = `${command} > /dev/null 2>&1`;
         }
         //logger.inLog(`Executing ${command}`);
         execSync(command, options);
@@ -52,7 +52,7 @@ export class utils {
         options ??= { cwd: process.cwd() };
 
         if (!utils.verbose) {
-            command = `${command} > /dev/null 2>& 1`;
+            command = `${command} > /dev/null 2>&1`;
         }
         try {
             //logger.inLog(`Executing ${command}`);
