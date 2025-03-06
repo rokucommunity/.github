@@ -17,6 +17,13 @@ export class ChangelogGenerator {
         force: boolean;
     };
 
+    private marker = 'this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).';
+    private header = `# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).`
+
     public async updateChangeLog(options: ChangelogGenerator['options']) {
         logger.log(`Updating changelog for project ${options.project}`);
         logger.increaseIndent();
@@ -56,13 +63,21 @@ export class ChangelogGenerator {
         //assume the project running this command is the project being updated
         const changelogPath = s`CHANGELOG.md`;
 
-        let changelog = fsExtra.readFileSync(changelogPath).toString();
-        const [eolChar] = /\r?\n/.exec(changelog) ?? ['\r\n'];
-        const marker = 'this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).';
+        if (!fsExtra.existsSync(changelogPath)) {
+            logger.log('No changelog.md file found. Creating one');
+            fsExtra.outputFileSync(changelogPath);
+        }
 
+        let changelog = fsExtra.readFileSync(changelogPath).toString().trim();
+        if (changelog === '') {
+            logger.log('No content in changelog.md file. Adding header');
+            fsExtra.outputFileSync(changelogPath, this.header);
+        }
+
+        const [eolChar] = /\r?\n/.exec(changelog) ?? ['\r\n'];
         changelog = changelog.replace(
-            marker,
-            marker + lines.join(eolChar)
+            this.marker,
+            this.marker + lines.join(eolChar)
         );
         fsExtra.outputFileSync(changelogPath, changelog);
         logger.decreaseIndent();
