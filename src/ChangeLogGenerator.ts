@@ -37,8 +37,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         logger.log('Creating tempDir', this.tempDir);
         fsExtra.emptyDirSync(this.tempDir);
 
+        logger.log('Getting all project dependencies');
+        let projects = this.getProjectDependencies(options.project);
+
         logger.log('Cloning projects');
-        for (const project of this.projects) {
+        for (const project of projects) {
             this.cloneProject(project);
         }
 
@@ -90,6 +93,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         logger.decreaseIndent();
     }
 
+    private getProjectDependencies(projectName: string) {
+        const project = this.getProject(projectName);
+        const projects = [project];
+        const visitedProjects = new Set<string>();
+
+        const dfs = (current: string) => {
+            const project = this.getProject(current);
+            if (visitedProjects.has(current) || !project) {
+                return;
+            }
+            visitedProjects.add(current);
+
+            for (const dependency of [...project.dependencies, ...project.devDependencies]) {
+                dfs(dependency.name);
+                projects.push(this.getProject(dependency.name));
+            }
+        }
+
+        dfs(projectName);
+        return projects;
+    }
     /**
      * Find the year-month-day of the specified release from git logs
      */
