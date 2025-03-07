@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
         if (!options.force && project.changes.length === 0) {
             logger.log('Nothing has changed since last release');
+            logger.decreaseIndent();
             return;
         }
 
@@ -75,7 +76,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         let changelog = fsExtra.readFileSync(changelogPath).toString().trim();
         if (changelog === '') {
             logger.log('No content in changelog.md file. Adding header');
-            //convert the header to a buffer
             fsExtra.outputFileSync(changelogPath, this.HEADER);
         }
 
