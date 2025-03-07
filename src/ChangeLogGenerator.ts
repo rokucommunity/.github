@@ -46,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         if (!lastTag) {
             logger.log('Not tags were found. Set the lastTag to the first commit hash');
             logger.log(utils.executeCommandWithOutput('git log --pretty=format:%H'));
+            logger.log(utils.executeCommandWithOutput('git status'));
+            logger.log(utils.executeCommandWithOutput('git branch'));
             lastTag = utils.executeCommandWithOutput('git rev-list --max-parents=0 HEAD').toString().trim();
             latestReleaseVersion = lastTag;
         } else {
