@@ -45,7 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         let latestReleaseVersion;
         if (!lastTag) {
             logger.log('Not tags were found. Set the lastTag to the first commit hash');
-            utils.executeCommand(`git fetch origin --unshallow`, { cwd: project.dir });
             lastTag = utils.executeCommandWithOutput('git rev-list --max-parents=0 HEAD').toString().trim();
             latestReleaseVersion = lastTag;
         } else {
@@ -280,7 +279,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         project.dir = s`${this.tempDir}/${repoName}`;
         logger.log(`Cloning ${url}`);
 
-        utils.executeCommand(`git clone "${url}" "${project.dir}"`);
+        utils.executeCommand(`git clone --no-signle-branch --depth=0 "${url}" "${project.dir}"`);
     }
 
     private projects: Project[] = [{
