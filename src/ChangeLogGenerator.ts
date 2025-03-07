@@ -13,8 +13,7 @@ export class ChangelogGenerator {
 
     private options: {
         project: string;
-        test: boolean;
-        force: boolean;
+        releaseVersion: string;
     };
 
     private MARKER = 'this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).';
@@ -56,13 +55,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
         this.computeChanges(project, lastTag);
 
-        if (!options.force && project.changes.length === 0) {
+        if (project.changes.length === 0) {
             logger.log('Nothing has changed since last release');
             logger.decreaseIndent();
             return;
         }
 
-        const lines = this.getChangeLogs(project, lastTag);
+        const lines = this.getChangeLogs(project, lastTag, options.releaseVersion);
         logger.log(lines)
 
         //assume the project running this command is the project being updated
@@ -119,10 +118,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     }
 
     private isVersion(versionOrCommitHash: string) {
+        //TODO check iv v1.0 vs 1.0
         return semver.valid(versionOrCommitHash);
     }
 
-    private getChangeLogs(project: Project, lastTag: string) {
+    private getChangeLogs(project: Project, lastTag: string, releaseVersion: string) {
         const [month, day, year] = new Date().toLocaleDateString().split('/');
 
         function getReflink(project: Project, commit: Commit, includeProjectName = false) {
@@ -137,9 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
         const lines = [
             '', '', '', '',
-            //TODO Does this lastTag break if it's a commit hash?
-            // .  It seems like it will just look less readable
-            `## [UNRELEASED](${project.repositoryUrl}/compare/${lastTag}...UNRELEASED) - ${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`,
+            `## [${releaseVersion}](${project.repositoryUrl}/compare/${lastTag}...v${releaseVersion}) - ${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`,
             `### Changed`
         ];
         //add lines for each commit since last release
@@ -182,7 +180,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                 dependency.previousReleaseVersion = this.getDependencyVersionFromRelease(project, latestReleaseVersion, dependency.name, dependencyType);
                 const currentVersion = fsExtra.readJsonSync(s`${project.dir}/node_modules/${dependency.name}/package.json`).version;
 
-                //TODO BRONLEY should this be passing the flags option?
                 utils.executeCommand(`npm install ${dependency.name}@latest`, { cwd: project.dir });
 
                 dependency.newVersion = fsExtra.readJsonSync(s`${project.dir}/node_modules/${dependency.name}/package.json`).version;
@@ -225,7 +222,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         }
         endVersion = endVersion.startsWith('v') || endVersion === 'HEAD' ? endVersion : 'v' + endVersion;
         const project = this.getProject(projectName);
-        const commitMessages = utils.executeCommandWithOutput(`git log ${startVersion}...${endVersion} --oneline`, {
+        const commitMessages = utils.executeCommandWithOutput(`git log ${startVersion}...${endVersion} --oneline --first-parent`, {
             cwd: project?.dir
         }).toString()
             .split(/\r?\n/g)
