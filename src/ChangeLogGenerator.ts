@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
         if (!fsExtra.existsSync(changelogPath)) {
             logger.log('No changelog.md file found. Creating one');
-            fsExtra.outputFileSync(changelogPath);
+            fsExtra.outputFileSync(changelogPath, this.HEADER);
         }
 
         let changelog = fsExtra.readFileSync(changelogPath).toString().trim();
