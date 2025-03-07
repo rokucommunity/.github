@@ -28,12 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         logger.log(`Updating changelog for project ${options.project}`);
         logger.increaseIndent();
 
-        if (!fsExtra.existsSync(s`CHANGELOG.md`)) {
-            logger.log('No CHANGELOG.md file found. Skipping');
-            logger.decreaseIndent();
-            return;
-        }
-
         logger.log('Creating tempDir', this.tempDir);
         fsExtra.emptyDirSync(this.tempDir);
 
