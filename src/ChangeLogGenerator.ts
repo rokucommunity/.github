@@ -48,15 +48,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         const project = this.projects.filter(x => options.project.length === 0 || options.project.includes(x.name))?.at(0);
 
         let lastTag = this.getLastTag(project.dir);
+        let latestReleaseVersion;
         if (!lastTag) {
-            //TODO I don't like this code existing here. This class should only modify the changelog, not create tags
-            logger.log('No tags found. Creating initial tag v0.0.0 on first commit');
-            const firstCommit = utils.executeCommandWithOutput('git rev-list --max-parents=0 HEAD').toString().trim();
-            utils.executeCommand(`git tag v0.0.0 ${firstCommit}`, { cwd: project.dir });
-            utils.executeCommand(`git push origin --tags`, { cwd: project.dir });
-            lastTag = this.getLastTag(project.dir);
+            logger.log('Not tags were found. Set the lastTag to the first commit hash');
+            lastTag = utils.executeCommandWithOutput('git rev-list --max-parents=0 HEAD').toString().trim();
+            latestReleaseVersion = lastTag;
+        } else {
+            latestReleaseVersion = lastTag.replace(/^v/, '');
         }
-        const latestReleaseVersion = lastTag.replace(/^v/, '');
         logger.log(`Last release was ${lastTag}`);
 
         this.installDependencies(project, latestReleaseVersion);
@@ -124,6 +123,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         return date;
     }
 
+    private isVersion(versionOrCommitHash: string) {
+        return semver.valid(versionOrCommitHash);
+    }
+
     private getChangeLogs(project: Project, lastTag: string) {
         const [month, day, year] = new Date().toLocaleDateString().split('/');
 
@@ -139,6 +142,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
         const lines = [
             '', '', '', '',
+            //TODO Does this lastTag break if it's a commit hash?
+            // .  It seems like it will just look less readable
             `## [UNRELEASED](${project.repositoryUrl}/compare/${lastTag}...UNRELEASED) - ${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`,
             `### Changed`
         ];
@@ -167,7 +172,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     }
 
     private getDependencyVersionFromRelease(project: Project, releaseVersion: string, packageName: string, dependencyType: 'dependencies' | 'devDependencies') {
-        const output = utils.executeCommandWithOutput(`git show v${releaseVersion}:package.json`, { cwd: project.dir }).toString();
+        const ref = this.isVersion(releaseVersion) ? `v${releaseVersion}` : releaseVersion;
+        const output = utils.executeCommandWithOutput(`git show ${ref}:package.json`, { cwd: project.dir }).toString();
         const packageJson = JSON.parse(output);
         const version = packageJson?.[dependencyType][packageName];
         return /\d+\.\d+\.\d+/.exec(version)?.[0] as string;
@@ -181,6 +187,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                 dependency.previousReleaseVersion = this.getDependencyVersionFromRelease(project, latestReleaseVersion, dependency.name, dependencyType);
                 const currentVersion = fsExtra.readJsonSync(s`${project.dir}/node_modules/${dependency.name}/package.json`).version;
 
+                //TODO BRONLEY should this be passing the flags option?
                 utils.executeCommand(`npm install ${dependency.name}@latest`, { cwd: project.dir });
 
                 dependency.newVersion = fsExtra.readJsonSync(s`${project.dir}/node_modules/${dependency.name}/package.json`).version;
@@ -190,6 +197,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                 }
             }
         };
+
+        install(project, 'dependencies');
+        install(project, 'devDependencies', '--save-dev');
     }
 
     private computeChanges(project: Project, lastTag: string) {
@@ -215,7 +225,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     }
 
     private getCommitLogs(projectName: string, startVersion: string, endVersion: string) {
-        startVersion = startVersion.startsWith('v') ? startVersion : 'v' + startVersion;
+        if (this.isVersion(startVersion)) {
+            startVersion = startVersion.startsWith('v') ? startVersion : 'v' + startVersion;
+        }
         endVersion = endVersion.startsWith('v') || endVersion === 'HEAD' ? endVersion : 'v' + endVersion;
         const project = this.getProject(projectName);
         const commitMessages = utils.executeCommandWithOutput(`git log ${startVersion}...${endVersion} --oneline`, {
