@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [UNRELEASED](https://github.com/rokucommunity/.github/compare/bc0e27f429d268f87cb33900ba83f7a2a32a4624...UNRELEASED) - 2025-03-06
+### Changed
+ - Use the first commit hash if we do not have a tag ([3c3bd77](https://github.com/rokucommunity/.github/commit/3c3bd77))
+ - Try a different push method ([c557c5f](https://github.com/rokucommunity/.github/commit/c557c5f))
+ - Try to cleanup the redirect ([3a245fc](https://github.com/rokucommunity/.github/commit/3a245fc))
+ - Try to use a different command to get the first commmit ([b68d33b](https://github.com/rokucommunity/.github/commit/b68d33b))
+ - Add depth first search to get the dependencies of all the projects to clone ([d3b98fb](https://github.com/rokucommunity/.github/commit/d3b98fb))
+ - Push the initial tag to the remote ([da295a9](https://github.com/rokucommunity/.github/commit/da295a9))
+ - When there are no tags found, create a v0.0.0 on the first commit ([693e61b](https://github.com/rokucommunity/.github/commit/693e61b))
+ - Create a changelog if missing. Add the header if there is nothing in the changelog ([599ecdf](https://github.com/rokucommunity/.github/commit/599ecdf))
+ - Create the initialize, create-artifact, and publish release workflows. ([bb4b19f](https://github.com/rokucommunity/.github/commit/bb4b19f))
+
+
+
 ## [UNRELEASED](https://github.com/rokucommunity/.github/compare/v1.0.0...UNRELEASED) - 2025-03-04
 ### Changed
  - Get the changes from the pull request and add them to the release notes ([0c3f560](https://github.com/rokucommunity/.github/commit/0c3f560))
@@ -42,4 +56,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Create initialize-release-tpl.yml ([bcc5b61](https://github.com/rokucommunity/.github/commit/bcc5b61))
  - Update create-release-artifacts-tpl.yml ([fb2a443](https://github.com/rokucommunity/.github/commit/fb2a443))
  - Create create-release-artifacts-tpl.yml ([b7c9844](https://github.com/rokucommunity/.github/commit/b7c9844))
-
