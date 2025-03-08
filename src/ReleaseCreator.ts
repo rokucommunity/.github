@@ -220,9 +220,9 @@ export class ReleaseCreator {
 
         let patchNotes = lines.join('\n');
 
-        // remove the changelog header and markdown from the patch notes
+        // remove the changelog header from the patch notes
         if (patchNotes.startsWith(ChangelogGenerator.HEADER)) {
-            patchNotes = patchNotes.slice(ChangelogGenerator.HEADER.length + ChangelogGenerator.MARKER.length);
+            patchNotes = patchNotes.slice(ChangelogGenerator.HEADER.length);
         }
 
         logger.log(`Changelog patch: ${patchNotes}`);
