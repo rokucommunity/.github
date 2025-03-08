@@ -205,8 +205,6 @@ export class ReleaseCreator {
         const parsedPatch = diffParse.default(changelogFile.patch);
         let lines = [];
 
-        //TODO remove first line of change long
-        //TODO remove header of release
         parsedPatch?.at(0)?.chunks.forEach(chunk => {
             chunk.changes.forEach(change => {
                 // only add new lines to the patch notes
@@ -215,7 +213,18 @@ export class ReleaseCreator {
                 }
             });
         });
-        const patchNotes = lines.join('\n');
+
+        // remove the release header from the patch notes
+        const regex = new RegExp(`## \\[${releaseVersion}\\]\\(.*\\) - \\d{4}-\\d{2}-\\d{2}`);
+        lines = lines.filter(l => !regex.test(l));
+
+        let patchNotes = lines.join('\n');
+
+        // remove the changelog header and markdown from the patch notes
+        if (patchNotes.startsWith(ChangelogGenerator.HEADER)) {
+            patchNotes = patchNotes.slice(ChangelogGenerator.HEADER.length + ChangelogGenerator.MARKER.length);
+        }
+
         logger.log(`Changelog patch: ${patchNotes}`);
 
         logger.log(`Add the changelog patch notes to the release notes`);

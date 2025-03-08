@@ -16,14 +16,19 @@ export class ChangelogGenerator {
         releaseVersion: string;
     };
 
-    public MARKER = 'this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).';
-    public HEADER = `# Changelog
+    static MARKER = 'this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).';
+    static HEADER = `# Changelog
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).`
 
     public async updateChangeLog(options: ChangelogGenerator['options']) {
+        logger.log('simple testing begin');
+        logger.inLog(this.isVersion('1.0.0') ? '1.0.0 is a version' : '1.0.0 is not a version');
+        logger.inLog(this.isVersion('v1.0.0') ? 'v1.0.0 is a version' : 'v1.0.0 is not a version');
+        logger.log('simple testing end');
+
         logger.log(`Updating changelog for project ${options.project}`);
         logger.increaseIndent();
 
@@ -69,19 +74,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
         if (!fsExtra.existsSync(changelogPath)) {
             logger.log('No changelog.md file found. Creating one');
-            fsExtra.outputFileSync(changelogPath, this.HEADER);
+            fsExtra.outputFileSync(changelogPath, ChangelogGenerator.HEADER);
         }
 
         let changelog = fsExtra.readFileSync(changelogPath).toString().trim();
         if (changelog === '') {
             logger.log('No content in changelog.md file. Adding header');
-            fsExtra.outputFileSync(changelogPath, this.HEADER);
+            fsExtra.outputFileSync(changelogPath, ChangelogGenerator.HEADER);
         }
 
         const [eolChar] = /\r?\n/.exec(changelog) ?? ['\r\n'];
         changelog = changelog.replace(
-            this.MARKER,
-            this.MARKER + lines.join(eolChar)
+            ChangelogGenerator.MARKER,
+            ChangelogGenerator.MARKER + lines.join(eolChar)
         );
         fsExtra.outputFileSync(changelogPath, changelog);
         logger.decreaseIndent();
