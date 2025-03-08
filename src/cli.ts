@@ -49,18 +49,4 @@ let options = yargs
             process.exit(1);
         });
     })
-    .command('update-changelog', 'Update the changelog file with changes a given project and changes to dependecies for that project', (builder) => {
-        return builder
-            .option('project', { type: 'string', description: 'The name the project being updated' })
-    }, (argv) => {
-        let options = {
-            project: argv.project,
-            test: true,
-            force: false
-        }
-        new ChangelogGenerator().updateChangeLog(options).catch(e => {
-            console.error(e);
-            process.exit(1);
-        });
-    })
     .argv;
