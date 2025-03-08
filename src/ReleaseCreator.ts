@@ -204,6 +204,9 @@ export class ReleaseCreator {
         const changelogFile = files.find(f => f.filename === 'CHANGELOG.md');
         const parsedPatch = diffParse.default(changelogFile.patch);
         let lines = [];
+
+        //TODO remove first line of change long
+        //TODO remove header of release
         parsedPatch?.at(0)?.chunks.forEach(chunk => {
             chunk.changes.forEach(change => {
                 // only add new lines to the patch notes
@@ -295,6 +298,7 @@ export class ReleaseCreator {
 
 
         //TODO figure out how to specify the artifact to publish
+        //TODO check if release on store already exists
         logger.log(`Publishing artifacts`);
         if (options.releaseType === 'npm') {
             logger.inLog(`Publishing ${assets[0].name} to npm`);
@@ -302,6 +306,18 @@ export class ReleaseCreator {
         } else if (options.releaseType === 'vsce') {
             logger.inLog(`Publishing ${assets[0].name} to vscode`);
             // utils.executeCommand(`npx vsce publish ${ assets[0.name] }`);
+            // utils.executeCommand(`npx ovsx publish -p ${{env.OPEN_VSX_TOKEN}} --debug`);
+            // #publish vsix to Visual Studio extension store
+            // - name: Publish to VSCode extension store
+            //   #exclude beta release tags
+            //   if: contains(github.ref, '-beta.') == false
+            //   run: npx vsce publish -p ${{env.VSCE_TOKEN}}
+
+            // #pubish to OpenVSX
+            // - name: Publish to OpenVSX registry
+            //   #exclude beta release tags
+            //   if: contains(github.ref, '-beta.') == false
+            //   run: npx ovsx publish -p ${{env.OPEN_VSX_TOKEN}} --debug
         }
 
         logger.decreaseIndent();

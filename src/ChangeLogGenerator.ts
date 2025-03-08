@@ -16,8 +16,8 @@ export class ChangelogGenerator {
         releaseVersion: string;
     };
 
-    private MARKER = 'this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).';
-    private HEADER = `# Changelog
+    public MARKER = 'this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).';
+    public HEADER = `# Changelog
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -279,6 +279,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         utils.executeCommand(`git clone --no-single-branch "${url}" "${project.dir}"`);
     }
 
+    /**
+        //TOOD remove this from here
+        Add the dependencies in package.json for each project
+        This will look up the package.json and add the dependencies to the project object
+
+        //TODO Get all the community projects, make a list of the names of the npm pacakges. Then look at the
+        package.json for the releasing project and see what the dependencies are. If the dependencies are not
+     */
+    //
     private projects: Project[] = [{
         name: 'roku-deploy',
         dependencies: [],
