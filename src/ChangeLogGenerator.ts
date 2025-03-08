@@ -24,14 +24,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).`
 
     public async updateChangeLog(options: ChangelogGenerator['options']) {
-        logger.log('simple testing begin');
-        logger.inLog(this.isVersion('1.0.0') ? '1.0.0 is a version' : '1.0.0 is not a version');
-        logger.inLog(this.isVersion('v1.0.0') ? 'v1.0.0 is a version' : 'v1.0.0 is not a version');
-        logger.inLog(this.isVersion('ask') ? 'ask is a version' : 'ask is not a version');
-        logger.inLog(this.isVersion('11111') ? '11111 is a version' : '11111 is not a version');
-        logger.inLog(this.isVersion('') ? '"" is a version' : '"" is not a version');
-        logger.log('simple testing end');
-
         logger.log(`Updating changelog for project ${options.project}`);
         logger.increaseIndent();
 
