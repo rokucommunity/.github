@@ -6,7 +6,9 @@
 import * as fsExtra from 'fs-extra';
 import { standardizePath as s } from 'brighterscript';
 import * as semver from 'semver';
+import fetch from 'node-fetch';
 import { logger, utils } from './utils';
+import { Octokit } from '@octokit/rest';
 
 export class ChangelogGenerator {
     private tempDir = s`${__dirname}/../.tmp/.releases`;
@@ -31,14 +33,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         fsExtra.emptyDirSync(this.tempDir);
 
         logger.log('Getting all project dependencies');
-        let projects = this.getProjectDependencies(options.project);
+        let projects = await this.getProjectDependencies(options.project);
 
-        logger.log('Cloning projects');
+        logger.log(`Cloning projects: ${projects.map(x => x.name).join(', ')}`);
         for (const project of projects) {
             this.cloneProject(project);
         }
 
-        const project = this.projects.filter(x => options.project.length === 0 || options.project.includes(x.name))?.at(0);
+        const project = projects.filter(x => options.project.length === 0 || options.project.includes(x.name))?.at(0);
 
         let lastTag = this.getLastTag(project.dir);
         let latestReleaseVersion;
@@ -87,27 +89,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         logger.decreaseIndent();
     }
 
-    private getProjectDependencies(projectName: string) {
-        const project = this.getProject(projectName);
-        const projects = [project];
-        const visitedProjects = new Set<string>();
+    private async getProjectDependencies(projectName: string) {
+        const octokit = new Octokit({
+            auth: process.env.GH_TOKEN,
+            request: { fetch }
+        });
+        logger.log(`Get all the projects from the rokucommunity org`);
+        const projects = await utils.octokitPageHelper((options: any, page: number) => {
+            return octokit.repos.listForOrg({
+                org: 'rokucommunity',
+                type: 'public',
+                per_page: utils.OCTOKIT_PER_PAGE,
+            });
+        });
+        let projectNpmNames = [];
+        logger.log(`Get all avaialble package.json for each project`);
+        const promises = projects.map(x => {
+            return octokit.repos.getContent({
+                owner: 'rokucommunity',
+                repo: x.name,
+                path: 'package.json',
+                request: { timeout: 10000 }
+            }).then((response) => {
+                // Decode Base64 content
+                const content = Buffer.from((response.data as any).content, "base64").toString("utf-8");
+                // Parse the cleaned string into a JSON object
+                const jsonObject = JSON.parse(content);
+                projectNpmNames.push({ repoName: x.name, packageName: jsonObject.name });
+                this.projects.push(new Project(x.name, jsonObject.name, x.html_url));
+            }).catch((e) => {
+                // do nothing
+            });
+        });
+        await Promise.all(promises);
 
-        const dfs = (current: string) => {
-            const project = this.getProject(current);
-            if (visitedProjects.has(current) || !project) {
-                return;
+        logger.log(`Get the package.json for the project ${projectName}, and find the dependencies that need to be cloned`);
+        let projectPackageJson = fsExtra.readJsonSync(s`package.json`);
+        let project = this.getProject(projectName);
+        let projectsToClone: Project[] = [new Project(project.name)]
+        Object.keys(projectPackageJson.dependencies).forEach(dependency => {
+            let foundDependency = projectNpmNames.find(x => x.packageName === dependency);
+            if (foundDependency) {
+                projectsToClone.push(new Project(foundDependency.repoName));
+                project.dependencies.push({ name: dependency, previousReleaseVersion: '', newVersion: '' });
             }
-            visitedProjects.add(current);
-
-            for (const dependency of [...project.dependencies, ...project.devDependencies]) {
-                dfs(dependency.name);
-                projects.push(this.getProject(dependency.name));
+        });
+        Object.keys(projectPackageJson.devDependencies).forEach(dependency => {
+            let foundDependency = projectNpmNames.find(x => x.packageName === dependency);
+            if (foundDependency) {
+                projectsToClone.push(new Project(foundDependency.repoName));
+                project.devDependencies.push({ name: dependency, previousReleaseVersion: '', newVersion: '' });
             }
-        }
-
-        dfs(projectName);
-        return projects;
+        });
+        projectsToClone = [...new Set(projectsToClone)];
+        return projectsToClone;
     }
+
     /**
      * Find the year-month-day of the specified release from git logs
      */
@@ -118,7 +155,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     }
 
     private isVersion(versionOrCommitHash: string) {
-        //TODO check iv v1.0 vs 1.0
         return semver.valid(versionOrCommitHash);
     }
 
@@ -220,8 +256,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         if (this.isVersion(startVersion)) {
             startVersion = startVersion.startsWith('v') ? startVersion : 'v' + startVersion;
         }
+        let project = this.getProject(projectName);
         endVersion = endVersion.startsWith('v') || endVersion === 'HEAD' ? endVersion : 'v' + endVersion;
-        const project = this.getProject(projectName);
         const commitMessages = utils.executeCommandWithOutput(`git log ${startVersion}...${endVersion} --oneline --first-parent`, {
             cwd: project?.dir
         }).toString()
@@ -272,124 +308,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             url = `https://github.com/rokucommunity/${repoName}`;
         }
 
-        //clone the project
-        project.dir = s`${this.tempDir}/${repoName}`;
         logger.log(`Cloning ${url}`);
+        project.dir = s`${this.tempDir}/${repoName}`;
 
         utils.executeCommand(`git clone --no-single-branch "${url}" "${project.dir}"`);
     }
 
-    /**
-        //TOOD remove this from here
-        Add the dependencies in package.json for each project
-        This will look up the package.json and add the dependencies to the project object
-
-        //TODO Get all the community projects, make a list of the names of the npm pacakges. Then look at the
-        package.json for the releasing project and see what the dependencies are. If the dependencies are not
-     */
-    //
-    private projects: Project[] = [{
-        name: 'roku-deploy',
-        dependencies: [],
-        groups: ['vscode']
-    }, {
-        name: '@rokucommunity/logger',
-        dependencies: [],
-        groups: ['vscode']
-    }, {
-        name: '@rokucommunity/bslib',
-        dependencies: [],
-        groups: ['vscode']
-    }, {
-        name: 'brighterscript',
-        dependencies: [
-            '@rokucommunity/bslib',
-            'roku-deploy'
-        ],
-        groups: ['vscode']
-    }, {
-        name: 'roku-debug',
-        dependencies: [
-            'brighterscript',
-            '@rokucommunity/logger',
-            'roku-deploy'
-        ],
-        groups: ['vscode']
-    }, {
-        name: 'brighterscript-formatter',
-        dependencies: [
-            'brighterscript'
-        ],
-        groups: ['vscode']
-    }, {
-        name: 'bslint',
-        npmName: '@rokucommunity/bslint',
-        dependencies: [],
-        devDependencies: [
-            'brighterscript'
-        ]
-    }, {
-        name: 'brs',
-        npmName: '@rokucommunity/brs',
-        dependencies: []
-    }, {
-        name: 'ropm',
-        dependencies: [
-            'brighterscript',
-            'roku-deploy'
-        ]
-    }, {
-        name: 'roku-report-analyzer',
-        dependencies: [
-            '@rokucommunity/logger',
-            'brighterscript'
-        ]
-    }, {
-        name: 'vscode-brightscript-language',
-        dependencies: [
-            'roku-deploy',
-            'roku-debug',
-            'brighterscript',
-            'brighterscript-formatter'
-        ],
-        groups: ['vscode']
-    }, {
-        name: 'roku-promise',
-        dependencies: []
-    }, {
-        name: 'promises',
-        npmName: '@rokucommunity/promises',
-        dependencies: []
-    }, {
-        name: '.github',
-        dependencies: []
-    }, {
-        name: 'release-testing',
-        dependencies: []
-    }].map(project => {
-        const repoName = project.name.split('/').pop();
-        return {
-            ...project,
-            dir: s`${this.tempDir}/${repoName}`,
-            dependencies: project.dependencies?.map(d => ({
-                name: d,
-                previousReleaseVersion: undefined as any,
-                newVersion: undefined as any
-            })) ?? [],
-            devDependencies: project.devDependencies?.map(d => ({
-                name: d,
-                previousReleaseVersion: undefined as any,
-                newVersion: undefined as any
-            })) ?? [],
-            npmName: project.npmName ?? project.name,
-            repositoryUrl: (project as any).repositoryUrl ?? `https://github.com/rokucommunity/${repoName}`,
-            changes: []
-        };
-    });
+    private projects: Project[] = [];
 }
 
 
-interface Project {
+class Project {
+    constructor(name: string, npmName?: string, repositoryUrl?: string) {
+        this.name = name;
+        this.npmName = npmName;
+        this.repositoryUrl = repositoryUrl ?? `https://github.com/rokucommunity/${name}`;
+        this.dependencies = [];
+        this.devDependencies = [];
+        this.changes = [];
+    }
+
     name: string;
     /**
      * The name of the package on npm. Defaults to `project.name`
@@ -410,7 +348,6 @@ interface Project {
         previousReleaseVersion: string;
         newVersion: string;
     }>;
-    groups?: string[];
     /**
      * A list of changes to be included in the changelog. If non-empty, this indicates the package needs a new release
      */

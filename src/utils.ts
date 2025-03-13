@@ -37,6 +37,7 @@ export class logger {
 
 export class utils {
     static verbose = true;
+    static OCTOKIT_PER_PAGE = 100;
 
     static executeCommand(command: string, options?: { cwd: string }) {
         options ??= { cwd: process.cwd() };
@@ -67,5 +68,24 @@ export class utils {
 
         //logger.inLog(`Executing ${command}`);
         return execSync(`${command} `, options).toString().trim();
+    }
+
+    static async octokitPageHelper<T>(api: (options: any, page: number) => Promise<{ data: T[] }>, options = {}): Promise<T[]> {
+        let getMorePages = true;
+        let page = 1;
+        let data: T[] = [];
+
+        while (getMorePages) {
+            let releasePage = await api(options, page);
+            if (!releasePage.data) {
+                break;
+            }
+            if (releasePage.data.length < utils.OCTOKIT_PER_PAGE) {
+                getMorePages = false;
+            }
+            data = data.concat(releasePage.data);
+            page++;
+        }
+        return data;
     }
 }

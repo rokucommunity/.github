@@ -18,7 +18,6 @@ type ReleaseType = 'major' | 'minor' | 'patch';
 
 export class ReleaseCreator {
     private octokit: Octokit;
-    private OCTOKIT_PER_PAGE = 100;
     private ORG = 'rokucommunity';
 
     constructor() {
@@ -138,7 +137,7 @@ export class ReleaseCreator {
         logger.log(`Found release ${releaseVersion}`);
 
         logger.log(`Get all existing release assets for ${repoName}`);
-        let assets = await this.octokitPageHelper((page: number) => {
+        let assets = await utils.octokitPageHelper((page: number) => {
             let result = this.octokit.repos.listReleaseAssets({
                 owner: this.ORG,
                 repo: repoName,
@@ -278,7 +277,7 @@ export class ReleaseCreator {
         }
 
         logger.log(`Get all existing release assets for ${repoName}`);
-        let assets = await this.octokitPageHelper((page: number) => {
+        let assets = await utils.octokitPageHelper((page: number) => {
             let result = this.octokit.repos.listReleaseAssets({
                 owner: this.ORG,
                 repo: repoName,
@@ -289,8 +288,6 @@ export class ReleaseCreator {
 
         for (const asset of assets) {
             logger.inLog(`Release asset: ${asset.name}`);
-            logger.log(`Release asset: ${asset.name}`);
-            //download the asset
             const assetResponse = await this.octokit.repos.getReleaseAsset({
                 owner: this.ORG,
                 repo: repoName,
@@ -427,11 +424,11 @@ export class ReleaseCreator {
 
     private async listGitHubReleases(repoName: string) {
         logger.log(`Get all releases for ${repoName}`);
-        const releases = await this.octokitPageHelper((options: any, page: number) => {
+        const releases = await utils.octokitPageHelper((options: any, page: number) => {
             return this.octokit.rest.repos.listReleases({
                 owner: this.ORG,
                 repo: repoName,
-                per_page: this.OCTOKIT_PER_PAGE,
+                per_page: utils.OCTOKIT_PER_PAGE,
                 page: page
             });
         });
@@ -444,25 +441,6 @@ export class ReleaseCreator {
         const repoName = require("path").basename(repoPath);
         logger.log(`Repository name: ${repoName}`);
         return repoName;
-    }
-
-    private async octokitPageHelper<T>(api: (options: any, page: number) => Promise<{ data: T[] }>, options = {}): Promise<T[]> {
-        let getMorePages = true;
-        let page = 1;
-        let data: T[] = [];
-
-        while (getMorePages) {
-            let releasePage = await api(options, page);
-            if (!releasePage.data) {
-                break;
-            }
-            if (releasePage.data.length < this.OCTOKIT_PER_PAGE) {
-                getMorePages = false;
-            }
-            data = data.concat(releasePage.data);
-            page++;
-        }
-        return data;
     }
 
 }
