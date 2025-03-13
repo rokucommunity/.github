@@ -1,6 +1,6 @@
 {
-  "name": "release-testing",
-  "version": "1.0.7",
+  "name": "github",
+  "version": "1.0.8",
   "description": "Repo to test the new release flow",
   "main": "index.js",
   "scripts": {
