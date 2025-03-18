@@ -304,26 +304,40 @@ export class ReleaseCreator {
 
 
         //TODO figure out how to specify the artifact to publish
-        //TODO check if release on store already exists
         logger.log(`Publishing artifacts`);
         if (options.releaseType === 'npm') {
             logger.inLog(`Publishing ${assets[0].name} to npm`);
             // utils.executeCommand(`npm publish ${ assets[0].name }`);
         } else if (options.releaseType === 'vsce') {
+            const vsceName = this.getVscePackageName();
+            { //Scope for vscode
+                const versions = utils.executeCommandWithOutput(`npx @vscode/vsce show ${vsceName} --json`);
+                const json = JSON.parse(versions);
+                if (!(json.versions.find((version: any) => version.version === releaseVersion))) {
             logger.inLog(`Publishing ${assets[0].name} to vscode`);
             // utils.executeCommand(`npx vsce publish ${ assets[0.name] }`);
-            // utils.executeCommand(`npx ovsx publish -p ${{env.OPEN_VSX_TOKEN}} --debug`);
             // #publish vsix to Visual Studio extension store
             // - name: Publish to VSCode extension store
             //   #exclude beta release tags
             //   if: contains(github.ref, '-beta.') == false
             //   run: npx vsce publish -p ${{env.VSCE_TOKEN}}
-
+                }
+            }
+            { //Scope for open-vsx
+                const response = utils.executeCommandWithOutput(`curl -s "https://open-vsx.org/api/-/query?extensionId=${vsceName}"`);
+                const json = JSON.parse(response);
+                const versions = json?.extensions[0]?.allVersions ?? {};
+                if (!(releaseVersion in versions)) {
+                    logger.inLog(`Publishing ${assets[0].name} to open-vsx`);
+                    // utils.executeCommand(`npx ovsx publish -p ${{env.OPEN_VSX_TOKEN}} --debug`);
             // #pubish to OpenVSX
             // - name: Publish to OpenVSX registry
             //   #exclude beta release tags
             //   if: contains(github.ref, '-beta.') == false
             //   run: npx ovsx publish -p ${{env.OPEN_VSX_TOKEN}} --debug
+                }
+            }
+
         }
 
         logger.decreaseIndent();
@@ -421,6 +435,18 @@ export class ReleaseCreator {
 
         return version;
     }
+
+    private async getPackageName() {
+        const packageJson = await fsExtra.readJson(path.join(process.cwd(), 'package.json'));
+        return packageJson.name;
+    }
+
+    private async getVscePackageName() {
+        const packageJson = await fsExtra.readJson(path.join(process.cwd(), 'package.json'));
+        //TODO make sure publisher exists
+        return `${packageJson.publisher}.${packageJson.name}`
+    }
+
 
     private async listGitHubReleases(repoName: string) {
         logger.log(`Get all releases for ${repoName}`);

@@ -104,24 +104,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         });
         let projectNpmNames = [];
         logger.log(`Get all avaialble package.json for each project`);
-        const promises = projects.map(x => {
-            return octokit.repos.getContent({
+        const promises = projects.map(async x => {
+            const response = await octokit.repos.getContent({
                 owner: 'rokucommunity',
                 repo: x.name,
                 path: 'package.json',
                 request: { timeout: 10000 }
-            }).then((response) => {
-                // Decode Base64 content
-                const content = Buffer.from((response.data as any).content, "base64").toString("utf-8");
-                // Parse the cleaned string into a JSON object
-                const jsonObject = JSON.parse(content);
-                projectNpmNames.push({ repoName: x.name, packageName: jsonObject.name });
-                this.projects.push(new Project(x.name, jsonObject.name, x.html_url));
-            }).catch((e) => {
-                // do nothing
             });
+            // Decode Base64 content
+            const content = Buffer.from((response.data as any).content, "base64").toString("utf-8");
+            // Parse the cleaned string into a JSON object
+            const jsonObject = JSON.parse(content);
+            projectNpmNames.push({ repoName: x.name, packageName: jsonObject.name });
+            this.projects.push(new Project(x.name, jsonObject.name, x.html_url));
+            logger.log(`Error getting package.json for ${x.name}`);
         });
-        await Promise.all(promises);
+        await Promise.allSettled(promises);
 
         logger.log(`Get the package.json for the project ${projectName}, and find the dependencies that need to be cloned`);
         let projectPackageJson = fsExtra.readJsonSync(s`package.json`);
