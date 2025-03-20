@@ -25,4 +25,3 @@ jobs:
       branch: ${{ github.event.inputs.branch }}
       releaseType: ${{ github.event.inputs.releaseType }}
     secrets: inherit
-
