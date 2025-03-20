@@ -1,0 +1,57 @@
+name: Initialize Release
+run-name: Initialize Release
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        description: "The branch to create the release from"
+        default: "master"
+        required: true
+      releaseType:
+        type: string
+        description: "The type of release: major, minor, or patch"
+        required: true
+
+jobs:
+  initialize-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@master
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Checkout .github repo
+        uses: actions/checkout@master
+        with:
+          repository: rokucommunity/.github
+          path: nested-ci
+
+      - name: Setup node
+        uses: actions/setup-node@master
+        with:
+          node-version: "22.9.0"
+
+      - name: CD into nested-ci, run npm ci
+        run: |
+          cd nested-ci
+          npm ci
+
+      - name: get RokuCommunity bot token #so the bot's name shows up on all our actions
+        uses: tibdex/github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.BOT_APP_ID }}
+          private_key: ${{ secrets.BOT_PRIVATE_KEY }}`
+
+      - name: Setup bot
+        run: |
+            git config user.name "rokucommunity-bot"
+            git config user.email "93661887+rokucommunity-bot@users.noreply.github.com"
+
+      - name: Create release
+        env:
+           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: npx ts-node nested-ci/src/cli.ts initialize-release --releaseType "${{ inputs.releaseType }}" --branch "${{ inputs.branch }}"

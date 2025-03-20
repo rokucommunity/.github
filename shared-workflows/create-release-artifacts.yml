@@ -1,0 +1,51 @@
+name: Create Release Artifacts
+run-name: Create Release Artifacts
+
+on:
+   workflow_call:
+    inputs:
+        branch:
+            type: string
+            description: "The branch to create the release from"
+            required: true
+        node-version:
+            type: string
+            description: "The node version to use"
+            required: true
+        artifact-paths:
+            type: string
+            description: "The glob patters to find the release artifacts"
+            required: true
+
+jobs:
+  create-release-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@master
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Checkout .github repo
+        uses: actions/checkout@master
+        with:
+          repository: rokucommunity/.github
+          path: nested-ci
+
+      - name: Setup node
+        uses: actions/setup-node@master
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: CD into nested-ci, run npm ci
+        run: |
+          cd nested-ci
+          npm ci
+
+      - name: Run package
+        run: npm run package;
+
+      - name: Run upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: npx ts-node nested-ci/src/cli.ts upload-release --branch ${{ inputs.branch }} --artifactPaths ${{ inputs.artifact-paths }}

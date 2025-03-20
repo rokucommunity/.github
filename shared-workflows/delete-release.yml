@@ -1,0 +1,38 @@
+name: Delete Release
+run-name: Delete Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        description: "The version to delete"
+        required: true
+
+jobs:
+  delete-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@master
+
+      - name: Checkout .github repo
+        uses: actions/checkout@master
+        with:
+          repository: rokucommunity/.github
+          path: nested-ci
+
+      - name: Setup node
+        uses: actions/setup-node@master
+        with:
+          node-version: "22.9.0"
+
+      - name: CD into nested-ci, run npm ci
+        run: |
+          cd nested-ci
+          npm ci
+
+      - name: Delete release
+        env:
+           GH_TOKEN: ${{ github.token }}
+        run: npx ts-node nested-ci/src/cli.ts delete-release --releaseVersion ${{ inputs.version }}
