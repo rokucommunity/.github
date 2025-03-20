@@ -1,4 +1,4 @@
-name: Create Release Artifacts
+name: Make Release Artifacts
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ on:
 jobs:
   run:
       if: startsWith( github.head_ref, 'release/')
-      uses: rokucommunity/workflows/.github/workflows/create-release-artifacts.yml@master
+      uses: rokucommunity/workflows/.github/workflows/make-release-artifacts.yml@master
       with:
         branch: ${{ github.event.pull_request.head.ref }}
         node-version: "22.9.0"

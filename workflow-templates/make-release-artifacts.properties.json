@@ -1,4 +1,4 @@
 {
-    "name": "Create Release Artifacts",
+    "name": "Make Release Artifacts",
     "description": "Workflow triggers when release pull requests are opened or updated."
 }
