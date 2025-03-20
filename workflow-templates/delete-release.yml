@@ -10,7 +10,7 @@ on:
 
 jobs:
   run:
-    uses: rokucommunity/.github/.github/workflows/delete-release.yml@master
+    uses: rokucommunity/workflows/.github/workflows/delete-release.yml@master
     with:
       version: ${{ github.event.inputs.version }}
     secrets: inherit
