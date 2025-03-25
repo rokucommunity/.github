@@ -19,7 +19,7 @@ on:
           - patch
       installDependencies:
         type: boolean
-        description: "Whether to install dependencies"
+        description: "Update dependencies"
         required: true
         default: true
 
