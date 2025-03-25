@@ -17,6 +17,11 @@ on:
           - major
           - minor
           - patch
+      installDependencies:
+        type: boolean
+        description: "Whether to install dependencies"
+        required: true
+        default: true
 
 jobs:
   run:
@@ -24,4 +29,5 @@ jobs:
     with:
       branch: ${{ github.event.inputs.branch }}
       releaseType: ${{ github.event.inputs.releaseType }}
+      installDependencies: ${{ github.event.inputs.installDependencies }}
     secrets: inherit
