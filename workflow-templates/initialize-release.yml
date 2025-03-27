@@ -19,7 +19,7 @@ on:
           - patch
       installDependencies:
         type: boolean
-        description: "Update dependencies"
+        description: "Install latest RokuCommunity dependencies"
         required: true
         default: true
 
