@@ -17,6 +17,15 @@ on:
           - major
           - minor
           - patch
+          - pre
+          - premajor
+          - preminor
+          - prepatch
+      preid:
+        type: string
+        description: "The name for the pre-release identifier"
+        default: ""
+        required: true
       installDependencies:
         type: boolean
         description: "Install latest RokuCommunity dependencies"
@@ -29,5 +38,6 @@ jobs:
     with:
       branch: ${{ github.event.inputs.branch }}
       releaseType: ${{ github.event.inputs.releaseType }}
+      preid: ${{ github.event.inputs.preid }}
       installDependencies: ${{ github.event.inputs.installDependencies }}
     secrets: inherit
