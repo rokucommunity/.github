@@ -10,20 +10,18 @@ on:
         required: true
       releaseType:
         type: choice
-        description: "The type of release: major, minor, or patch"
+        description: "Type of release: major, minor, patch, prerelease, or custom"
         required: true
         default: "patch"
         options:
           - major
           - minor
           - patch
-          - pre
-          - premajor
-          - preminor
-          - prepatch
-      preid:
+          - prerelease
+          - custom
+      customVersion:
         type: string
-        description: "The name for the pre-release identifier"
+        description: "Specified version to use. May include preids."
         default: ""
         required: true
       installDependencies:
