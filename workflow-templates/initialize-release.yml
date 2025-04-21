@@ -36,6 +36,6 @@ jobs:
     with:
       branch: ${{ github.event.inputs.branch }}
       releaseType: ${{ github.event.inputs.releaseType }}
-      preid: ${{ github.event.inputs.preid }}
+      customVersion: ${{ github.event.inputs.customVersion }}
       installDependencies: ${{ github.event.inputs.installDependencies }}
     secrets: inherit
