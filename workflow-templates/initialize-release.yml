@@ -23,7 +23,7 @@ on:
         type: string
         description: "Specified version to use. May include preids."
         default: ""
-        required: true
+        required: false
       installDependencies:
         type: boolean
         description: "Install latest RokuCommunity dependencies"
