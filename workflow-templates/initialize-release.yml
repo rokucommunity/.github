@@ -5,12 +5,12 @@ on:
     inputs:
       branch:
         type: string
-        description: "The branch to create the release from"
+        description: "Create release from this branch:"
         default: "master"
         required: true
       releaseType:
         type: choice
-        description: "Type of release: major, minor, patch, prerelease, or custom"
+        description: "Release type:"
         required: true
         default: "patch"
         options:
@@ -21,7 +21,7 @@ on:
           - custom
       customVersion:
         type: string
-        description: "Specified version to use. May include preids."
+        description: "Version override (ignore release type):"
         default: ""
         required: false
       installDependencies:
