@@ -21,7 +21,7 @@ on:
           - custom
       customVersion:
         type: string
-        description: "Version override (ignore release type):"
+        description: "Version override: (ignore release type)"
         default: ""
         required: false
       installDependencies:
