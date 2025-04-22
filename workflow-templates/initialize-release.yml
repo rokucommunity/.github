@@ -18,7 +18,6 @@ on:
           - minor
           - patch
           - prerelease
-          - custom
       customVersion:
         type: string
         description: "Version override: (ignore release type)"
