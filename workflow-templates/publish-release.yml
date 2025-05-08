@@ -10,9 +10,9 @@ on:
 
 jobs:
   run:
-    if: startsWith( github.head_ref, 'release/') && (github.event.pull_request.merged == true)
     uses: rokucommunity/workflows/.github/workflows/publish-release.yml@master
     with:
       release-type: "npm" # "vsce"
       ref: ${{ github.event.pull_request.merge_commit_sha }}
+      merged: ${{ github.event.pull_request.merged }}
     secrets: inherit
